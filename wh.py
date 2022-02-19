@@ -64,7 +64,7 @@ def get_pass(message):
     password = message.text
     bot.send_message(message.from_user.id, 'Ща, не рыпайся. Отправлю запросик и закинем тебя в базу.')
     bot.delete_message(message.chat.id, message.message_id)
-    reg_to_bd(message)
+    #reg_to_bd(message)
 
 def get_elgur(login, password):
     r = post('https://api.eljur.ru/api/auth', data={
@@ -100,25 +100,25 @@ def get_elgur_by_token(token):
     return lst_marks
 
 
-def encode(data):
-    file = open('key.txt', 'rb')
-    cipher_key = file.readline()
-    cipher = Fernet(cipher_key)
-    encrypted_text = cipher.encrypt(data)
-    string = bytes.decode(encrypted_text, encoding='utf-8')
-    return string
+# def encode(data):
+#     file = open('key.txt', 'rb')
+#     cipher_key = file.readline()
+#     cipher = Fernet(cipher_key)
+#     encrypted_text = cipher.encrypt(data)
+#     string = bytes.decode(encrypted_text, encoding='utf-8')
+#     return string
 
 
-def reg_to_bd(message):
-    if get_elgur(login, password) == None:
-        bot.send_message(message.from_user.id, 'Кхмм... Пароль неверный! Введи нормально.')
-        reg(message)
-        return
-    token, lst_marks = get_elgur(login, password)
-    values = [message.chat.id, str("'") + encode(login) + str("'"), str("'") + encode(password) + str("'"), str("'") + token + str("'"), str("'") + json.dumps(lst_marks) + str("'"), datetime.now().date().day, datetime.now().date().month, datetime.now().date().year]
-    cursor.execute(f"INSERT INTO data(user_id, login, pass, token, last_marks, day, month, year) VALUES({values[0]}, {values[1]}, {values[2]}, {values[3]}, {values[4]}, {values[5]}, {values[6]}, {values[7]});")
-    res = bot.send_message(message.from_user.id, 'Ага, в базу тебя добавил... А теперь время получать оценки, салага!')
-    bot.send_sticker(message.from_user.id, 'CAACAgIAAxkBAAEDz7hh_nZwsCfI-0F0RDJAccjHRFO2IgACYgADmS9LCloe14FkpNDVIwQ', res.id)
+# def reg_to_bd(message):
+#     if get_elgur(login, password) == None:
+#         bot.send_message(message.from_user.id, 'Кхмм... Пароль неверный! Введи нормально.')
+#         reg(message)
+#         return
+#     token, lst_marks = get_elgur(login, password)
+#     values = [message.chat.id, str("'") + encode(login) + str("'"), str("'") + encode(password) + str("'"), str("'") + token + str("'"), str("'") + json.dumps(lst_marks) + str("'"), datetime.now().date().day, datetime.now().date().month, datetime.now().date().year]
+#     cursor.execute(f"INSERT INTO data(user_id, login, pass, token, last_marks, day, month, year) VALUES({values[0]}, {values[1]}, {values[2]}, {values[3]}, {values[4]}, {values[5]}, {values[6]}, {values[7]});")
+#     res = bot.send_message(message.from_user.id, 'Ага, в базу тебя добавил... А теперь время получать оценки, салага!')
+#     bot.send_sticker(message.from_user.id, 'CAACAgIAAxkBAAEDz7hh_nZwsCfI-0F0RDJAccjHRFO2IgACYgADmS9LCloe14FkpNDVIwQ', res.id)
 
 @server.route('/' + TOKEN, methods=['POST'])
 def getMessage():
