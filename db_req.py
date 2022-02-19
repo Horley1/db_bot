@@ -29,11 +29,11 @@ def parsing_process(message_id):
                 for j in range(ln2):
                     if j > len(txt[i]['marks']) - 1 or new_txt[i]['marks'][j] != txt[i]['marks'][j]:
                         if new_txt[i]['marks'][j]['value'] not in ["Н", "н", "ОП", "оп", "Оп"]:
-                            if new_txt[i]['marks'][j]['lesson_comment'] == "None":
+                            if new_txt[i]['marks'][j]['lesson_comment'] == "None" or new_txt[i]['marks'][j]['lesson_comment'] == "":
                                 ls_comm = "нету"
                             else:
                                 ls_comm = new_txt[i]['marks'][j]['lesson_comment']
-                            if new_txt[i]['marks'][j]['comment'] == "None":
+                            if new_txt[i]['marks'][j]['comment'] == "None" or new_txt[i]['marks'][j]['comment'] == "":
                                 comm = "нету"
                             else:
                                 comm = new_txt[i]['marks'][j]['comment']
