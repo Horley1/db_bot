@@ -7,6 +7,7 @@ from random import randint
 from requests import post, get
 from json import loads,dumps
 from datetime import datetime
+from fernet import *
 bot = telebot.TeleBot(TOKEN)
 server = Flask(__name__)
 conn = psycopg2.connect(dbname='d23v4g77tn2j92', user='qzusajqercdmfq',
@@ -61,8 +62,6 @@ def get_elgur(login, password, message):
         'devkey': '9235e26e80ac2c509c48fe62db23642c',  # 19c4bfc2705023fe080ce94ace26aec9
         'out_format': 'json'
     })
-    print("Jopa")
-    bot.send_message(message.from_user.id, 'Проверяю')
     if r.status_code != 200:
         return None
     token = loads(r.text)['response']['result']['token']
@@ -75,9 +74,15 @@ def get_elgur(login, password, message):
     })
     student_code = list(r2.json()['response']['result']['students'].keys())[0]
     lst_marks = r2.json()['response']['result']['students'][student_code]['lessons']
-    bot.send_message(message.from_user.id, 'Чекнул')
     return (token, lst_marks)
 
+def encode(data):
+    file = open('key.txt', 'rb')
+    cipher_key = file.readline()
+    cipher = Fernet(cipher_key)
+    encrypted_text = cipher.encrypt(data)
+    string = bytes.decode(encrypted_text, encoding='utf-8')
+    return string
 
 def reg_to_bd(message):
     if get_elgur(login, password, message) == None:
@@ -85,13 +90,7 @@ def reg_to_bd(message):
         reg(message)
         return
     token, lst_marks = get_elgur(login, password, message)
-    bot.send_message(message.from_user.id, token)
-    print(str("'") + login + str("'"))
-    print(str("'") + password + str("'"))
-    print(str("'") + token + str("'"))
-    print(str("'") + dumps(lst_marks) + str("'"))
-    print(datetime.now().date().day)
-    values = [message.chat.id, str("'") + login + str("'"), str("'") + password + str("'"), str("'") + token + str("'"), str("'") + dumps(lst_marks) + str("'"), datetime.now().date().day, datetime.now().date().month, datetime.now().date().year]
+    values = [message.chat.id, str("'") + encode(login) + str("'"), str("'") + encode(password) + str("'"), str("'") + token + str("'"), str("'") + dumps(lst_marks) + str("'"), datetime.now().date().day, datetime.now().date().month, datetime.now().date().year]
     bot.send_message(message.from_user.id, 'бд')
     cursor.execute(f"INSERT INTO data(user_id, login, pass, token, last_marks, day, month, year) VALUES({values[0]}, {values[1]}, {values[2]}, {values[3]}, {values[4]}, {values[5]}, {values[6]}, {values[7]});")
     bot.send_message(message.from_user.id, '+')
