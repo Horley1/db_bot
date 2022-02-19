@@ -29,7 +29,11 @@ def parsing_process(message_id):
                 for j in range(ln2):
                     if j > len(txt[i]['marks']) - 1 or new_txt[i]['marks'][j] != txt[i]['marks'][j]:
                         if new_txt[i]['marks'][j]['value'] not in ["Н", "н", "ОП", "оп", "Оп"]:
-                            bot.send_message(message_id, f"У тебя новая оценка по {new_txt[i]['name']}\nОценка: <tg-spoiler> {new_txt[i]['marks'][j]['value']} </tg-spoiler> ✅\nТип: {new_txt[i]['marks'][j]['lesson_comment']}\nДата: {new_txt[i]['marks'][j]['date']}", parse_mode="HTML")
+                            if new_txt[i]['marks'][j]['lesson_comment'] == "None":
+                                new_txt[i]['marks'][j]['lesson_comment'] = "нету"
+                            if new_txt[i]['marks'][j]['comment'] == "None":
+                                new_txt[i]['marks'][j]['comment'] = "нету"
+                            bot.send_message(message_id, f"У тебя новая оценка по {new_txt[i]['name']}\nОценка: <tg-spoiler> {new_txt[i]['marks'][j]['value']} </tg-spoiler> ✅\nТип: {new_txt[i]['marks'][j]['lesson_comment']}\nКомментарий: {new_txt[i]['marks'][j]['comment']}\nДата: {new_txt[i]['marks'][j]['date']}", parse_mode="HTML")
 
         add_to_bd(message_id, new_txt)
 
