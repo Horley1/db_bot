@@ -51,14 +51,7 @@ def get_pass(message):
     password = message.text
     bot.send_message(message.from_user.id, 'Ща, не рыпайся. Отправлю запросик и закинем тебя в базу.')
     bot.delete_message(message.chat.id, message.message_id)
-    #reg_to_bd(message)
-
-
-@bot.message_handler(func=lambda message: True, content_types=['text'])
-def help(message):
-    res = bot.send_message(message.chat.id, phrases[randint(0, 7)])
-    bot.send_sticker(message.chat.id, ids[randint(0, 14)], res.id)
-    bot.send_message(message.chat.id, str(message.chat.id))
+    reg_to_bd(message)
 
 def get_elgur(login, password):
     r = post('https://api.eljur.ru/api/auth', data={
@@ -95,6 +88,11 @@ def reg_to_bd(message):
     bot.send_sticker(message.from_user.id, 'CAACAgIAAxkBAAEDz7hh_nZwsCfI-0F0RDJAccjHRFO2IgACYgADmS9LCloe14FkpNDVIwQ', res.id)
 
 
+@bot.message_handler(func=lambda message: True, content_types=['text'])
+def txt(message):
+    res = bot.send_message(message.chat.id, phrases[randint(0, 7)])
+    bot.send_sticker(message.chat.id, ids[randint(0, 14)], res.id)
+    bot.send_message(message.chat.id, str(message.chat.id))
 
 
 
