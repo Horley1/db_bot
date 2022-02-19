@@ -23,17 +23,17 @@ def help(message):
 
 @bot.message_handler(commands=['reg'])
 def reg(message):
-    if not check_bd(message):
-        bot.send_message(message.chat.id, "Напиши мне свой логин:")
+    # if not check_bd(message):
+    bot.send_message(message.chat.id, "Напиши мне свой логин:")
         #bot.register_next_step_handler(message, get_login)
-    else:
-        bot.send_message(message.chat.id, "Эййй, ты уже в базе!")
+    # else:
+    #     bot.send_message(message.chat.id, "Эййй, ты уже в базе!")
 
-def check_bd(message):
-    if cursor.execute(f"SELECT * FROM data WHERE user_id={message.chat.id}").fetchone():
-        return True
-    else:
-        return False
+# def check_bd(message):
+#     if cursor.execute(f"SELECT * FROM data WHERE user_id={message.chat.id}").fetchone():
+#         return True
+#     else:
+#         return False
 
 
 @bot.message_handler(func=lambda message: True, content_types=['text'])
