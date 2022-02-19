@@ -30,7 +30,7 @@ def reg(message):
       bot.send_message(message.chat.id, "Эййй, ты уже в базе!")
 
 def check_bd(message):
-      cursor.execute(f"SELECT * FROM data WHERE user_id={message.chat.id}")
+    cursor.execute(f"SELECT * FROM data WHERE user_id={message.chat.id}")
     if cursor.fetchone():
         return True
     else:
