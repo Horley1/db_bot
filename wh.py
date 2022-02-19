@@ -66,38 +66,38 @@ def get_pass(message):
     bot.delete_message(message.chat.id, message.message_id)
     #reg_to_bd(message)
 
-def get_elgur(login, password):
-    r = post('https://api.eljur.ru/api/auth', data={
-        'login': login,
-        'password': password,
-        'vendor': '2007',
-        'devkey': '9235e26e80ac2c509c48fe62db23642c',  # 19c4bfc2705023fe080ce94ace26aec9
-        'out_format': 'json'
-    })
-    if r.status_code != 200:
-        return None
-    token = loads(r.text)['response']['result']['token']
-    r2 = get('https://api.eljur.ru/api/getmarks', params={
-        'auth_token': token,
-        'vendor': '2007',
-        'out_format': 'json',
-        'devkey': '9235e26e80ac2c509c48fe62db23642c',
-        'days': '20220110-20220320'
-    })
-    student_code = list(r2.json()['response']['result']['students'].keys())[0]
-    lst_marks = r2.json()['response']['result']['students'][student_code]['lessons']
-    return (token, lst_marks)
-def get_elgur_by_token(token):
-    r2 = get('https://api.eljur.ru/api/getmarks', params={
-        'auth_token': token,
-        'vendor': '2007',
-        'out_format': 'json',
-        'devkey': '9235e26e80ac2c509c48fe62db23642c',
-        'days': '20220110-20220320'
-    })
-    student_code = list(r2.json()['response']['result']['students'].keys())[0]
-    lst_marks = r2.json()['response']['result']['students'][student_code]['lessons']
-    return lst_marks
+# def get_elgur(login, password):
+#     r = post('https://api.eljur.ru/api/auth', data={
+#         'login': login,
+#         'password': password,
+#         'vendor': '2007',
+#         'devkey': '9235e26e80ac2c509c48fe62db23642c',  # 19c4bfc2705023fe080ce94ace26aec9
+#         'out_format': 'json'
+#     })
+#     if r.status_code != 200:
+#         return None
+#     token = loads(r.text)['response']['result']['token']
+#     r2 = get('https://api.eljur.ru/api/getmarks', params={
+#         'auth_token': token,
+#         'vendor': '2007',
+#         'out_format': 'json',
+#         'devkey': '9235e26e80ac2c509c48fe62db23642c',
+#         'days': '20220110-20220320'
+#     })
+#     student_code = list(r2.json()['response']['result']['students'].keys())[0]
+#     lst_marks = r2.json()['response']['result']['students'][student_code]['lessons']
+#     return (token, lst_marks)
+# def get_elgur_by_token(token):
+#     r2 = get('https://api.eljur.ru/api/getmarks', params={
+#         'auth_token': token,
+#         'vendor': '2007',
+#         'out_format': 'json',
+#         'devkey': '9235e26e80ac2c509c48fe62db23642c',
+#         'days': '20220110-20220320'
+#     })
+#     student_code = list(r2.json()['response']['result']['students'].keys())[0]
+#     lst_marks = r2.json()['response']['result']['students'][student_code]['lessons']
+#     return lst_marks
 
 
 # def encode(data):
