@@ -31,7 +31,7 @@ def help(message):
 def reg(message):
     if not check_bd(message):
         bot.send_message(message.chat.id, "Напиши мне свой логин:")
-        bot.register_next_step_handler(message, get_login)
+        # bot.register_next_step_handler(message, get_login)
     else:
         bot.send_message(message.chat.id, "Эййй, ты уже в базе!")
 
@@ -50,20 +50,20 @@ def check_bd(message):
         return False
 
 
-def get_login(message):
-    global login
-    login = message.text
-    bot.send_message(message.from_user.id, 'ОК. Теперь напиши мне свой пароль. ')
-    bot.send_message(message.from_user.id, 'Пароль шифруется внутренней функцией Python, поэтому никто кроме него пароль не узнает!')
-    bot.delete_message(message.chat.id, message.message_id)
-    bot.register_next_step_handler(message, get_pass)
-
-
-def get_pass(message):
-    global password
-    password = message.text
-    bot.send_message(message.from_user.id, 'Ща, не рыпайся. Отправлю запросик и закинем тебя в базу.')
-    bot.delete_message(message.chat.id, message.message_id)
+# def get_login(message):
+#     global login
+#     login = message.text
+#     bot.send_message(message.from_user.id, 'ОК. Теперь напиши мне свой пароль. ')
+#     bot.send_message(message.from_user.id, 'Пароль шифруется внутренней функцией Python, поэтому никто кроме него пароль не узнает!')
+#     bot.delete_message(message.chat.id, message.message_id)
+#     bot.register_next_step_handler(message, get_pass)
+#
+#
+# def get_pass(message):
+#     global password
+#     password = message.text
+#     bot.send_message(message.from_user.id, 'Ща, не рыпайся. Отправлю запросик и закинем тебя в базу.')
+#     bot.delete_message(message.chat.id, message.message_id)
     #reg_to_bd(message)
 
 # def get_elgur(login, password):
