@@ -4,3 +4,4 @@ fernet
 telebot
 aiogram
 flask
+psycopg2
