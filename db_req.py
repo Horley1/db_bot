@@ -98,8 +98,10 @@ def add_to_bd(message_id, new_list):
 def req():
     cursor.execute("SELECT user_id FROM data")
     test = cursor.fetchall()
+    print("YES")
     for elem in test:
         try:
+            print(elem)
             parsing_process(elem[0])
         except:
             pass
