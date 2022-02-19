@@ -25,7 +25,7 @@ def help(message):
 def reg(message):
     if not check_bd(message):
       bot.send_message(message.chat.id, "Напиши мне свой логин:")
-      #bot.register_next_step_handler(message, get_login)
+      bot.register_next_step_handler(message, get_login)
     else:
       bot.send_message(message.chat.id, "Эййй, ты уже в базе!")
 
