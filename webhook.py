@@ -53,7 +53,7 @@ def get_pass(message):
     bot.delete_message(message.chat.id, message.message_id)
     reg_to_bd(message)
 
-def get_elgur(login, password):
+def get_elgur(login, password, message):
     r = post('https://api.eljur.ru/api/auth', data={
         'login': login,
         'password': password,
@@ -61,6 +61,8 @@ def get_elgur(login, password):
         'devkey': '9235e26e80ac2c509c48fe62db23642c',  # 19c4bfc2705023fe080ce94ace26aec9
         'out_format': 'json'
     })
+    print("Jopa")
+    bot.send_message(message.from_user.id, 'Проверяю')
     if r.status_code != 200:
         return None
     token = loads(r.text)['response']['result']['token']
@@ -73,15 +75,16 @@ def get_elgur(login, password):
     })
     student_code = list(r2.json()['response']['result']['students'].keys())[0]
     lst_marks = r2.json()['response']['result']['students'][student_code]['lessons']
+    bot.send_message(message.from_user.id, 'Чекнул')
     return (token, lst_marks)
 
 
 def reg_to_bd(message):
-    if get_elgur(login, password) == None:
+    if get_elgur(login, password, message) == None:
         bot.send_message(message.from_user.id, 'Кхмм... Пароль неверный! Введи нормально.')
         reg(message)
         return
-    token, lst_marks = get_elgur(login, password)
+    token, lst_marks = get_elgur(login, password, message)
     values = [message.chat.id, str("'") + login + str("'"), str("'") + password + str("'"), str("'") + token + str("'"), str("'") + dumps(lst_marks) + str("'"), datetime.now().date().day, datetime.now().date().month, datetime.now().date().year]
     cursor.execute(f"INSERT INTO data(user_id, login, pass, token, last_marks, day, month, year) VALUES({values[0]}, {values[1]}, {values[2]}, {values[3]}, {values[4]}, {values[5]}, {values[6]}, {values[7]});")
     res = bot.send_message(message.from_user.id, 'Ага, в базу тебя добавил... А теперь время получать оценки, салага!')
