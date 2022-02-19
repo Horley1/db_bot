@@ -6,7 +6,7 @@ import telebot
 from random import randint
 from requests import post, get
 from json import loads,dumps
-import datetime
+from datetime import datetime
 bot = telebot.TeleBot(TOKEN)
 server = Flask(__name__)
 conn = psycopg2.connect(dbname='d23v4g77tn2j92', user='qzusajqercdmfq',
