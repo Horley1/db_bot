@@ -101,7 +101,6 @@ def reg_to_bd(message):
 def txt(message):
     res = bot.send_message(message.chat.id, phrases[randint(0, 7)])
     bot.send_sticker(message.chat.id, ids[randint(0, 14)], res.id)
-    bot.send_message(message.chat.id, str(message.chat.id))
 
 
 
