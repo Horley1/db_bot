@@ -43,7 +43,8 @@ def help(message):
 
 
 def check_bd(message):
-    if cursor.execute(f"SELECT * FROM data WHERE user_id={message.chat.id}").fetchone():
+    cursor.execute(f"SELECT * FROM data WHERE user_id={message.chat.id}")
+    if cursor.fetchone():
         return True
     else:
         return False
