@@ -86,6 +86,11 @@ def reg_to_bd(message):
         return
     token, lst_marks = get_elgur(login, password, message)
     bot.send_message(message.from_user.id, token)
+    print(str("'") + login + str("'"))
+    print(str("'") + password + str("'"))
+    print(str("'") + token + str("'"))
+    print(str("'") + dumps(lst_marks) + str("'"))
+    print(datetime.now().date().day)
     values = [message.chat.id, str("'") + login + str("'"), str("'") + password + str("'"), str("'") + token + str("'"), str("'") + dumps(lst_marks) + str("'"), datetime.now().date().day, datetime.now().date().month, datetime.now().date().year]
     bot.send_message(message.from_user.id, 'бд')
     cursor.execute(f"INSERT INTO data(user_id, login, pass, token, last_marks, day, month, year) VALUES({values[0]}, {values[1]}, {values[2]}, {values[3]}, {values[4]}, {values[5]}, {values[6]}, {values[7]});")
