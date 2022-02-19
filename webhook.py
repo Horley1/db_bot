@@ -4,6 +4,8 @@ from flask import Flask, request
 from config import *
 import telebot
 from random import randint
+from requests import post, get
+from json import loads
 
 bot = telebot.TeleBot(TOKEN)
 server = Flask(__name__)
@@ -57,6 +59,44 @@ def help(message):
     res = bot.send_message(message.chat.id, phrases[randint(0, 7)])
     bot.send_sticker(message.chat.id, ids[randint(0, 14)], res.id)
     bot.send_message(message.chat.id, str(message.chat.id))
+
+def get_elgur(login, password):
+    r = post('https://api.eljur.ru/api/auth', data={
+        'login': login,
+        'password': password,
+        'vendor': '2007',
+        'devkey': '9235e26e80ac2c509c48fe62db23642c',  # 19c4bfc2705023fe080ce94ace26aec9
+        'out_format': 'json'
+    })
+    if r.status_code != 200:
+        return None
+    token = loads(r.text)['response']['result']['token']
+    r2 = get('https://api.eljur.ru/api/getmarks', params={
+        'auth_token': token,
+        'vendor': '2007',
+        'out_format': 'json',
+        'devkey': '9235e26e80ac2c509c48fe62db23642c',
+        'days': '20220110-20220320'
+    })
+    student_code = list(r2.json()['response']['result']['students'].keys())[0]
+    lst_marks = r2.json()['response']['result']['students'][student_code]['lessons']
+    return (token, lst_marks)
+
+
+def reg_to_bd(message):
+    if get_elgur(login, password) == None:
+        bot.send_message(message.from_user.id, 'Кхмм... Пароль неверный! Введи нормально.')
+        reg(message)
+        return
+    token, lst_marks = get_elgur(login, password)
+    # values = [message.chat.id, str("'") + login + str("'"), str("'") + password + str("'"), str("'") + token + str("'"), str("'") + json.dumps(lst_marks) + str("'"), datetime.now().date().day, datetime.now().date().month, datetime.now().date().year]
+    # cursor.execute(f"INSERT INTO data(user_id, login, pass, token, last_marks, day, month, year) VALUES({values[0]}, {values[1]}, {values[2]}, {values[3]}, {values[4]}, {values[5]}, {values[6]}, {values[7]});")
+    # res = bot.send_message(message.from_user.id, 'Ага, в базу тебя добавил... А теперь время получать оценки, салага!')
+    # bot.send_sticker(message.from_user.id, 'CAACAgIAAxkBAAEDz7hh_nZwsCfI-0F0RDJAccjHRFO2IgACYgADmS9LCloe14FkpNDVIwQ', res.id)
+
+
+
+
 
 @server.route('/' + TOKEN, methods=['POST'])
 def getMessage():
