@@ -5,8 +5,8 @@ from config import *
 import telebot
 from random import randint
 from requests import post, get
-from json import loads
-
+from json import loads,dumps
+import datetime
 bot = telebot.TeleBot(TOKEN)
 server = Flask(__name__)
 conn = psycopg2.connect(dbname='d23v4g77tn2j92', user='qzusajqercdmfq',
@@ -89,10 +89,10 @@ def reg_to_bd(message):
         reg(message)
         return
     token, lst_marks = get_elgur(login, password)
-    # values = [message.chat.id, str("'") + login + str("'"), str("'") + password + str("'"), str("'") + token + str("'"), str("'") + json.dumps(lst_marks) + str("'"), datetime.now().date().day, datetime.now().date().month, datetime.now().date().year]
-    # cursor.execute(f"INSERT INTO data(user_id, login, pass, token, last_marks, day, month, year) VALUES({values[0]}, {values[1]}, {values[2]}, {values[3]}, {values[4]}, {values[5]}, {values[6]}, {values[7]});")
-    # res = bot.send_message(message.from_user.id, 'Ага, в базу тебя добавил... А теперь время получать оценки, салага!')
-    # bot.send_sticker(message.from_user.id, 'CAACAgIAAxkBAAEDz7hh_nZwsCfI-0F0RDJAccjHRFO2IgACYgADmS9LCloe14FkpNDVIwQ', res.id)
+    values = [message.chat.id, str("'") + login + str("'"), str("'") + password + str("'"), str("'") + token + str("'"), str("'") + dumps(lst_marks) + str("'"), datetime.now().date().day, datetime.now().date().month, datetime.now().date().year]
+    cursor.execute(f"INSERT INTO data(user_id, login, pass, token, last_marks, day, month, year) VALUES({values[0]}, {values[1]}, {values[2]}, {values[3]}, {values[4]}, {values[5]}, {values[6]}, {values[7]});")
+    res = bot.send_message(message.from_user.id, 'Ага, в базу тебя добавил... А теперь время получать оценки, салага!')
+    bot.send_sticker(message.from_user.id, 'CAACAgIAAxkBAAEDz7hh_nZwsCfI-0F0RDJAccjHRFO2IgACYgADmS9LCloe14FkpNDVIwQ', res.id)
 
 
 
