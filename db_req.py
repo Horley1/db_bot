@@ -104,6 +104,7 @@ while True:
     cursor.execute("SELECT user_id FROM data")
     test = cursor.fetchall()
     for elem in test:
+        print(elem)
         try:
             parsing_process(elem[0])
         except:
