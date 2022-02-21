@@ -100,10 +100,9 @@ def add_to_bd(message_id, new_list):
     values = [message_id, str("'") + json.dumps(new_list) + str("'")]
     cursor.execute(f"UPDATE data SET last_marks = {values[1]} WHERE user_id = {values[0]}")
 
-
-cursor.execute("SELECT user_id FROM data")
-test = cursor.fetchall()
 while True:
+    cursor.execute("SELECT user_id FROM data")
+    test = cursor.fetchall()
     for elem in test:
         try:
             parsing_process(elem[0])
