@@ -15,6 +15,20 @@ conn = psycopg2.connect(dbname='d23v4g77tn2j92', user='qzusajqercdmfq',
 cursor = conn.cursor()
 conn.autocommit = True
 mon = {"01":"января", "02":"февраля", "03":"марта", "04":"апреля", "05":"мая", "06":"июня", "07":"июля", "08":"августа", "09":"сентября", "10":"октября", "11":"ноября", "12":"декабря"}
+sub = ["алгебре", "биологии", "географии", "геометрии", "английскому языку", "информатике", "истории России и всеобщей истории", "литературе", "обществознанию", "практикуму", "практикум по физике", "русскому языку", "технологии", "физике", "физкультуре", "химии"]
+def get_elgur_by_token(token, message_id):
+    if check_date(message_id) > 0:
+        token = change_token(message_id)
+    r2 = get('https://api.eljur.ru/api/getmarks', params={
+        'auth_token': token,
+        'vendor': '2007',
+        'out_format': 'json',
+        'devkey': '9235e26e80ac2c509c48fe62db23642c',
+        'days': '20220110-20220320'
+    })
+    student_code = list(r2.json()['response']['result']['students'].keys())[0]
+    lst_marks = r2.json()['response']['result']['students'][student_code]['lessons']
+    return lst_marks
 
 def parsing_process(message_id):
     cursor.execute(f"SELECT * FROM data WHERE user_id={message_id}")
@@ -23,24 +37,28 @@ def parsing_process(message_id):
     txt = json.loads(txt[4])
     if new_txt != txt:
         for i in range(16):
+            print(i, new_txt[i]['name'])
             if txt[i] != new_txt[i]:
                 ln1 = len(txt[i]['marks'])
                 ln2 = len(new_txt[i]['marks'])
                 for j in range(ln2):
                     if j > len(txt[i]['marks']) - 1 or new_txt[i]['marks'][j] != txt[i]['marks'][j]:
                         if new_txt[i]['marks'][j]['value'] not in ["Н", "н", "ОП", "оп", "Оп"]:
-                            if new_txt[i]['marks'][j]['lesson_comment'] == "None" or new_txt[i]['marks'][j]['lesson_comment'] == "":
-                                ls_comm = "нету"
+                            if new_txt[i]['marks'][j]['lesson_comment'] == None or new_txt[i]['marks'][j]['lesson_comment'] == "":
+                                ls_comm = ""
                             else:
-                                ls_comm = new_txt[i]['marks'][j]['lesson_comment']
-                            if new_txt[i]['marks'][j]['comment'] == "None" or new_txt[i]['marks'][j]['comment'] == "":
-                                comm = "нету"
+                                ls_comm = f"Тип: {new_txt[i]['marks'][j]['lesson_comment']}\n"
+                            if new_txt[i]['marks'][j]['comment'] == None or new_txt[i]['marks'][j]['comment'] == "":
+                                comm = ""
                             else:
-                                comm = new_txt[i]['marks'][j]['comment']
+                                comm = f"Комментарий: {new_txt[i]['marks'][j]['comment']}\n"
                             date = new_txt[i]['marks'][j]['date'].split('-')
                             date = " ".join([date[2], mon[date[1]], date[0]])
-                            bot.send_message(message_id, f"У тебя новая оценка по {new_txt[i]['name']}\nОценка: <tg-spoiler> {new_txt[i]['marks'][j]['value']} ✅</tg-spoiler>\nТип: {ls_comm}\nКомментарий: {comm}\nДата: {date}", parse_mode="HTML")
-
+                            try:
+                                print("sent")
+                                bot.send_message(message_id, f"У тебя новая оценка по {sub[i]}\nОценка: <tg-spoiler> {new_txt[i]['marks'][j]['value']} ✅</tg-spoiler>\n{ls_comm}{comm}Дата: {date}", parse_mode="HTML")
+                            except:
+                                pass
         add_to_bd(message_id, new_txt)
 
 
@@ -65,8 +83,10 @@ def decode(data):
 
 
 def change_token(message_id):
-    login = cursor.execute(f"SELECT * FROM data WHERE user_id={message_id}").fetchone()[1]
-    password = cursor.execute(f"SELECT * FROM data WHERE user_id={message_id}").fetchone()[2]
+    cursor.execute(f"SELECT * FROM data WHERE user_id={message_id}")
+    login = cursor.fetchone()[1]
+    cursor.execute(f"SELECT * FROM data WHERE user_id={message_id}")
+    password = cursor.fetchone()[2]
     r = post('https://api.eljur.ru/api/auth', data={
         'login': decode(login),
         'password': decode(password),
@@ -79,23 +99,6 @@ def change_token(message_id):
     cursor.execute(f"UPDATE data SET token = {value} WHERE user_id = {message_id}")
     return token
 
-
-def get_elgur_by_token(token, message_id):
-    if check_date(message_id) > 0:
-        token = change_token(message_id)
-
-    r2 = get('https://api.eljur.ru/api/getmarks', params={
-        'auth_token': token,
-        'vendor': '2007',
-        'out_format': 'json',
-        'devkey': '9235e26e80ac2c509c48fe62db23642c',
-        'days': '20220110-20220320'
-    })
-    student_code = list(r2.json()['response']['result']['students'].keys())[0]
-    lst_marks = r2.json()['response']['result']['students'][student_code]['lessons']
-    return lst_marks
-
-
 def add_to_bd(message_id, new_list):
     values = [message_id, str("'") + json.dumps(new_list) + str("'")]
     cursor.execute(f"UPDATE data SET last_marks = {values[1]} WHERE user_id = {values[0]}")
@@ -105,8 +108,5 @@ while True:
     test = cursor.fetchall()
     for elem in test:
         print(elem)
-        try:
-            parsing_process(elem[0])
-        except:
-            pass
-    time.sleep(0.1)
+        parsing_process(elem[0])
+        time.sleep(0)
