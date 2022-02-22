@@ -41,8 +41,6 @@ def parsing_process(message_id):
     txt = cursor.fetchone()
     new_txt = get_elgur_by_token(txt[3], message_id)
     txt = json.loads(txt[4])
-    print(len(txt))
-    print(len(new_txt))
     if new_txt != txt:
         try:
             for i in range(16):
@@ -60,12 +58,16 @@ def parsing_process(message_id):
                                     comm = ""
                                 else:
                                     comm = f"Комментарий: {new_txt[i]['marks'][j]['comment']}\n"
+                                if new_txt[i]['marks'][j]['mtype']['type'] == None or new_txt[i]['marks'][j]['mtype']['type'] == "":
+                                    tp = ""
+                                else:
+                                    tp = f"Пояснение: {new_txt[i]['marks'][j]['mtype']['type']}\n"
                                 date = new_txt[i]['marks'][j]['date'].split('-')
                                 date = f'Дата: {" ".join([date[2], mon[date[1]], date[0]])}'
                                 subject = f"У тебя новая оценка по {sub[new_txt[i]['name']]}\n"
                                 mark = f"Оценка: <tg-spoiler> {new_txt[i]['marks'][j]['value']} ✅</tg-spoiler>\n"
                                 try:
-                                    bot.send_message(message_id, f"{subject}{mark}{ls_comm}{comm}{date}", parse_mode="HTML")
+                                    bot.send_message(message_id, f"{subject}{mark}{ls_comm}{comm}{tp}{date}", parse_mode="HTML")
                                 except:
                                     #banned by the user
                                     pass
@@ -121,6 +123,8 @@ while True:
     cursor.execute("SELECT user_id FROM data")
     test = cursor.fetchall()
     for elem in test:
-        print(elem)
-        parsing_process(elem[0])
-        time.sleep(0)
+        try:
+            parsing_process(elem[0])
+        except:
+            pass
+        time.sleep(0.2)
