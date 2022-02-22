@@ -7,15 +7,21 @@ import time
 from datetime import datetime
 from fernet import *
 import psycopg2
-
+import smtplib
 bot = telebot.TeleBot(TOKEN)
 conn = psycopg2.connect(dbname='d23v4g77tn2j92', user='qzusajqercdmfq',
                         password='36da4de8c545b260b07dccc490b56cee3fcc72ee52a073e7fb40409e8ccf47c4',
                         host='ec2-52-31-217-108.eu-west-1.compute.amazonaws.com')
 cursor = conn.cursor()
 conn.autocommit = True
+mail = smtplib.SMTP_SSL('smtp.mail.ru', 465)
+mail.login('hor1ey@mail.ru','twzr96KmMhnVPzm8vkmg')
 mon = {"01":"января", "02":"февраля", "03":"марта", "04":"апреля", "05":"мая", "06":"июня", "07":"июля", "08":"августа", "09":"сентября", "10":"октября", "11":"ноября", "12":"декабря"}
-sub = ["алгебре", "биологии", "географии", "геометрии", "английскому языку", "информатике", "истории России и всеобщей истории", "литературе", "обществознанию", "практикуму", "практикум по физике", "русскому языку", "технологии", "физике", "физкультуре", "химии"]
+sub = {"Алгебра":"алгебре", "Биология":"биологии", "География":"географии", "Геометрия":"геометрии","Иностранный язык (английский)":"английскому языку","Информатика":"информатике",
+       "История России. Всеобщая история":"истории России и всеобщей истории","Литература":"литературе", "Обществознание":"обществознанию","Практикум":"практикуму","Практикум по решению задач по физике" :"практикум по физике",
+       "Русский язык":"русскому языку","Технология":"технологии","Физика":"физике","Физкультура":"физкультуре","Химия":"химии"}
+
+
 def get_elgur_by_token(token, message_id):
     if check_date(message_id) >= 2:
         token = change_token(message_id)
@@ -35,31 +41,39 @@ def parsing_process(message_id):
     txt = cursor.fetchone()
     new_txt = get_elgur_by_token(txt[3], message_id)
     txt = json.loads(txt[4])
+    print(len(txt))
+    print(len(new_txt))
     if new_txt != txt:
-        for i in range(16):
-            print(i, new_txt[i]['name'])
-            if txt[i] != new_txt[i]:
-                ln1 = len(txt[i]['marks'])
-                ln2 = len(new_txt[i]['marks'])
-                for j in range(ln2):
-                    if j > len(txt[i]['marks']) - 1 or new_txt[i]['marks'][j] != txt[i]['marks'][j]:
-                        if new_txt[i]['marks'][j]['value'] not in ["Н", "н", "ОП", "оп", "Оп"]:
-                            if new_txt[i]['marks'][j]['lesson_comment'] == None or new_txt[i]['marks'][j]['lesson_comment'] == "":
-                                ls_comm = ""
-                            else:
-                                ls_comm = f"Тип: {new_txt[i]['marks'][j]['lesson_comment']}\n"
-                            if new_txt[i]['marks'][j]['comment'] == None or new_txt[i]['marks'][j]['comment'] == "":
-                                comm = ""
-                            else:
-                                comm = f"Комментарий: {new_txt[i]['marks'][j]['comment']}\n"
-                            date = new_txt[i]['marks'][j]['date'].split('-')
-                            date = " ".join([date[2], mon[date[1]], date[0]])
-                            try:
-                                print("sent")
-                                bot.send_message(message_id, f"У тебя новая оценка по {sub[i]}\nОценка: <tg-spoiler> {new_txt[i]['marks'][j]['value']} ✅</tg-spoiler>\n{ls_comm}{comm}Дата: {date}", parse_mode="HTML")
-                            except:
-                                pass
-        add_to_bd(message_id, new_txt)
+        try:
+            for i in range(16):
+                if txt[i] != new_txt[i]:
+                    ln1 = len(txt[i]['marks'])
+                    ln2 = len(new_txt[i]['marks'])
+                    for j in range(ln2):
+                        if j > len(txt[i]['marks']) - 1 or new_txt[i]['marks'][j] != txt[i]['marks'][j]:
+                            if new_txt[i]['marks'][j]['value'] not in ["Н", "н", "ОП", "оп", "Оп"]:
+                                if new_txt[i]['marks'][j]['lesson_comment'] == None or new_txt[i]['marks'][j]['lesson_comment'] == "":
+                                    ls_comm = ""
+                                else:
+                                    ls_comm = f"Тип: {new_txt[i]['marks'][j]['lesson_comment']}\n"
+                                if new_txt[i]['marks'][j]['comment'] == None or new_txt[i]['marks'][j]['comment'] == "":
+                                    comm = ""
+                                else:
+                                    comm = f"Комментарий: {new_txt[i]['marks'][j]['comment']}\n"
+                                date = new_txt[i]['marks'][j]['date'].split('-')
+                                date = f'Дата: {" ".join([date[2], mon[date[1]], date[0]])}'
+                                subject = f"У тебя новая оценка по {sub[new_txt[i]['name']]}\n"
+                                mark = f"Оценка: <tg-spoiler> {new_txt[i]['marks'][j]['value']} ✅</tg-spoiler>\n"
+                                try:
+                                    bot.send_message(message_id, f"{subject}{mark}{ls_comm}{comm}{date}", parse_mode="HTML")
+                                except:
+                                    #banned by the user
+                                    pass
+            add_to_bd(message_id, new_txt)
+        except Exception as e:
+            add_to_bd(message_id, new_txt)
+            print("Error")
+            mail.sendmail("hor1ey@mail.ru", "ma.kalmykov23@gmail.com", str(e))
 
 
 def check_date(message_id):
