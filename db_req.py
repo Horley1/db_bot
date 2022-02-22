@@ -129,4 +129,4 @@ while True:
             parsing_process(elem[0])
         except:
             pass
-        time.sleep(0.2)
+        time.sleep(0)
