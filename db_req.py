@@ -25,7 +25,7 @@ sub = {"Алгебра":"алгебре", "Биология":"биологии",
 def get_elgur_by_token(token, message_id):
     if check_date(message_id) >= 2:
         token = change_token(message_id)
-        cursor.execute(f"UPDATE data SET day = {datetime.now().date().day} WHERE user_id = {message_id}")
+        cursor.execute(f"UPDATE data SET (day, month, year) = ({datetime.now().date().day}, {datetime.now().date().month},{datetime.now().date().year} ) WHERE user_id = {message_id}")
 
     r2 = get('https://api.eljur.ru/api/getmarks', params={
         'auth_token': token,
@@ -60,7 +60,7 @@ def parsing_process(message_id):
                                     comm = ""
                                 else:
                                     comm = f"Комментарий: {new_txt[i]['marks'][j]['comment']}\n"
-                                if new_txt[i]['marks'][j]['mtype']['type'] == None or new_txt[i]['marks'][j]['mtype']['type'] == "":
+                                if 'mtype' not in new_txt[i]['marks'][j] and (new_txt[i]['marks'][j]['mtype']['type'] == None or new_txt[i]['marks'][j]['mtype']['type'] == ""):
                                     tp = ""
                                 else:
                                     tp = f"Пояснение: {new_txt[i]['marks'][j]['mtype']['type']}\n"
