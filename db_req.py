@@ -25,6 +25,8 @@ sub = {"Алгебра":"алгебре", "Биология":"биологии",
 def get_elgur_by_token(token, message_id):
     if check_date(message_id) >= 2:
         token = change_token(message_id)
+        cursor.execute(f"UPDATE data SET day = {datetime.now().date().day} WHERE user_id = {message_id}")
+
     r2 = get('https://api.eljur.ru/api/getmarks', params={
         'auth_token': token,
         'vendor': '2007',
