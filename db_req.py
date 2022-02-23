@@ -10,9 +10,17 @@ import psycopg2
 import smtplib
 import multiprocessing
 bot = telebot.TeleBot(TOKEN)
+keepalive_kwargs = {
+    "keepalives": 1,
+    "keepalives_idle": 30,
+    "keepalives_interval": 5,
+    "keepalives_count": 5,
+}
 conn = psycopg2.connect(dbname='d23v4g77tn2j92', user='qzusajqercdmfq',
                         password='36da4de8c545b260b07dccc490b56cee3fcc72ee52a073e7fb40409e8ccf47c4',
-                        host='ec2-52-31-217-108.eu-west-1.compute.amazonaws.com')
+                        host='ec2-52-31-217-108.eu-west-1.compute.amazonaws.com',
+                        **keepalive_kwargs
+                        )
 cursor = conn.cursor()
 conn.autocommit = True
 mail = smtplib.SMTP_SSL('smtp.mail.ru', 465)
@@ -21,7 +29,6 @@ mon = {"01":"января", "02":"февраля", "03":"марта", "04":"ап
 sub = {"Алгебра":"алгебре", "Биология":"биологии", "География":"географии", "Геометрия":"геометрии","Иностранный язык (английский)":"английскому языку","Информатика":"информатике",
        "История России. Всеобщая история":"истории России и всеобщей истории","Литература":"литературе", "Обществознание":"обществознанию","Практикум":"практикуму","Практикум по решению задач по физике" :"практикум по физике",
        "Русский язык":"русскому языку","Технология":"технологии","Физика":"физике","Физкультура":"физкультуре","Химия":"химии"}
-
 
 def get_elgur_by_token(token, message_id):
     if check_date(message_id) >= 2:
@@ -130,5 +137,12 @@ if __name__ == '__main__' :
     while True:
         cursor.execute("SELECT user_id FROM data")
         test = cursor.fetchall()
+        mass = []
+        st = datetime.now()
         for elem in test:
-            parsing_process(elem[0])
+            x = multiprocessing.Process(target=parsing_process, args=[elem[0]])
+            x.start()
+            mass.append(x)
+        for elem in mass:
+            elem.join()
+        time.sleep(0.1)
