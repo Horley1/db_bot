@@ -10,9 +10,6 @@ import psycopg2
 import smtplib
 import multiprocessing
 bot = telebot.TeleBot(TOKEN)
-conn = psycopg2.connect(dbname=db_name, user=db_user, password=db_pass, host=db_host)
-cursor = conn.cursor()
-conn.autocommit = True
 
 mail = smtplib.SMTP_SSL('smtp.mail.ru', 465)
 mail.login('hor1ey@mail.ru','twzr96KmMhnVPzm8vkmg')
@@ -73,7 +70,7 @@ def parsing_process(message_id):
                                     pass
                 add_to_bd(message_id, new_txt)
     except Exception as e:
-        #add_to_bd(message_id, new_txt)
+        add_to_bd(message_id, new_txt)
         print("Error")
         print(e)
         try:
@@ -128,6 +125,9 @@ def add_to_bd(message_id, new_list):
 
 if __name__ == '__main__' :
     while True:
+        conn = psycopg2.connect(dbname=db_name, user=db_user, password=db_pass, host=db_host)
+        cursor = conn.cursor()
+        conn.autocommit = True
         cursor.execute("SELECT user_id FROM data")
         test = list(map(lambda x: x[0], cursor.fetchall()))
         st = datetime.now()
