@@ -99,8 +99,8 @@ def reg_to_bd(message):
 
 @bot.message_handler(func=lambda message: True, content_types=['text'])
 def txt(message):
-    res = bot.send_message(message.chat.id, phrases[randint(0, len(phrases) - 1])
-    bot.send_sticker(message.chat.id, ids[randint(0, len(ids) - 1], res.id)
+    res = bot.send_message(message.chat.id, phrases[randint(0, len(phrases) - 1)]
+    bot.send_sticker(message.chat.id, ids[randint(0, len(ids) - 1)], res.id)
 
 
 
