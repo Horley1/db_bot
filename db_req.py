@@ -19,6 +19,7 @@ mail.login('hor1ey@mail.ru','twzr96KmMhnVPzm8vkmg')
 
 
 def get_elgur_by_token(token, message_id):
+    global cursor
     if check_date(message_id) >= 2:
         token = change_token(message_id)
         cursor.execute(f"UPDATE data SET (day, month, year) = ({datetime.now().date().day}, {datetime.now().date().month},{datetime.now().date().year} ) WHERE user_id = {message_id}")
@@ -35,6 +36,7 @@ def get_elgur_by_token(token, message_id):
     return lst_marks
 
 def parsing_process(message_id):
+    global cursor
     try:
         cursor.execute(f"SELECT * FROM data WHERE user_id={message_id}")
         txt = cursor.fetchone()
@@ -81,6 +83,7 @@ def parsing_process(message_id):
 
 
 def check_date(message_id):
+    global cursor
     cursor.execute(f"SELECT * FROM data WHERE user_id={message_id}")
     day = cursor.fetchone()[5]
     cursor.execute(f"SELECT * FROM data WHERE user_id={message_id}")
@@ -101,6 +104,7 @@ def decode(data):
 
 
 def change_token(message_id):
+    global cursor
     cursor.execute(f"SELECT * FROM data WHERE user_id={message_id}")
     login = cursor.fetchone()[1]
     cursor.execute(f"SELECT * FROM data WHERE user_id={message_id}")
@@ -118,6 +122,7 @@ def change_token(message_id):
     return token
 
 def add_to_bd(message_id, new_list):
+    global cursor
     values = [message_id, str("'") + json.dumps(new_list) + str("'")]
     cursor.execute(f"UPDATE data SET last_marks = {values[1]} WHERE user_id = {values[0]}")
 
