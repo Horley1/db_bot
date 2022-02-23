@@ -18,7 +18,7 @@ conn.autocommit = True
 
 @bot.message_handler(commands=['start'])
 def start_message(message):
-    bot.send_message(message.chat.id, 'Привет! Если ты ещё не зарегался пиши: "/reg".')
+    bot.send_message(message.chat.id, 'Привет! Я бот, который будет отправлять тебе новые оценки из Элжура. Тебе нужно всего лишь зарегистрироваться: напиши /reg')
 
 @bot.message_handler(commands=['help'])
 def help(message):
@@ -31,7 +31,7 @@ def reg(message):
       bot.send_message(message.chat.id, "Напиши мне свой логин:")
       bot.register_next_step_handler(message, get_login)
     else:
-      bot.send_message(message.chat.id, "Эййй, ты уже в базе!")
+      bot.send_message(message.chat.id, "Эййй, ты уже в базе! Если что-то появиться, я тебя обязательно оповещу.")
 
 def check_bd(message):
     cursor.execute(f"SELECT * FROM data WHERE user_id={message.chat.id}")
