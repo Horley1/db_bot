@@ -11,15 +11,15 @@ import smtplib
 import multiprocessing
 bot = telebot.TeleBot(TOKEN)
 conn = psycopg2.connect(dbname=db_name, user=db_user, password=db_pass, host=db_host)
-cur = conn.cursor()
+cursor = conn.cursor()
 conn.autocommit = True
 
 mail = smtplib.SMTP_SSL('smtp.mail.ru', 465)
 mail.login('hor1ey@mail.ru','twzr96KmMhnVPzm8vkmg')
 
 
-def get_elgur_by_token(token, message_id, cursor = cur):
-    if check_date(message_id, cursor) >= 2:
+def get_elgur_by_token(token, message_id):
+    if check_date(message_id) >= 2:
         token = change_token(message_id)
         cursor.execute(f"UPDATE data SET (day, month, year) = ({datetime.now().date().day}, {datetime.now().date().month},{datetime.now().date().year} ) WHERE user_id = {message_id}")
 
@@ -34,11 +34,11 @@ def get_elgur_by_token(token, message_id, cursor = cur):
     lst_marks = r2.json()['response']['result']['students'][student_code]['lessons']
     return lst_marks
 
-def parsing_process(message_id, cursor = cur):
+def parsing_process(message_id):
     try:
         cursor.execute(f"SELECT * FROM data WHERE user_id={message_id}")
         txt = cursor.fetchone()
-        new_txt = get_elgur_by_token(txt[3], message_id, cursor)
+        new_txt = get_elgur_by_token(txt[3], message_id)
         txt = json.loads(txt[4])
         if new_txt != txt:
             for i in range(16):
@@ -69,9 +69,9 @@ def parsing_process(message_id, cursor = cur):
                                 except:
                                     #banned by the user
                                     pass
-                add_to_bd(message_id, new_txt, cursor)
+                add_to_bd(message_id, new_txt)
     except Exception as e:
-        add_to_bd(message_id, new_txt, cursor)
+        add_to_bd(message_id, new_txt)
         print("Error")
         print(e)
         try:
@@ -80,7 +80,7 @@ def parsing_process(message_id, cursor = cur):
             pass
 
 
-def check_date(message_id, cursor = cur):
+def check_date(message_id):
     cursor.execute(f"SELECT * FROM data WHERE user_id={message_id}")
     day = cursor.fetchone()[5]
     cursor.execute(f"SELECT * FROM data WHERE user_id={message_id}")
@@ -100,7 +100,7 @@ def decode(data):
     return str(decrypted_text)[2:-1]
 
 
-def change_token(message_id, cursor = cur):
+def change_token(message_id):
     cursor.execute(f"SELECT * FROM data WHERE user_id={message_id}")
     login = cursor.fetchone()[1]
     cursor.execute(f"SELECT * FROM data WHERE user_id={message_id}")
@@ -117,20 +117,16 @@ def change_token(message_id, cursor = cur):
     cursor.execute(f"UPDATE data SET token = {value} WHERE user_id = {message_id}")
     return token
 
-def add_to_bd(message_id, new_list, cursor = cur):
+def add_to_bd(message_id, new_list):
     values = [message_id, str("'") + json.dumps(new_list) + str("'")]
     cursor.execute(f"UPDATE data SET last_marks = {values[1]} WHERE user_id = {values[0]}")
 
 if __name__ == '__main__' :
     while True:
-        cur.execute("SELECT user_id FROM data")
-        test = cur.fetchall()
-        mass = []
+        cursor.execute("SELECT user_id FROM data")
+        test = list(map(lambda x: x[0], cursor.fetchall()))
         st = datetime.now()
-        for elem in test:
-            x = multiprocessing.Process(target=parsing_process, args=[elem[0]])
-            x.start()
-            mass.append(x)
-        for elem in mass:
-            elem.join()
-        time.sleep(0.1)
+        with multiprocessing.Pool(5) as p:
+            print(test)
+            p.map(parsing_process, test)
+        print(datetime.now() - st)
