@@ -73,7 +73,7 @@ def parsing_process(message_id):
                                     pass
                 add_to_bd(message_id, new_txt)
     except Exception as e:
-        add_to_bd(message_id, new_txt)
+        #add_to_bd(message_id, new_txt)
         print("Error")
         print(e)
         try:
