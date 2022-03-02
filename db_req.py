@@ -13,6 +13,7 @@ mail = smtplib.SMTP_SSL('smtp.mail.ru', 465)
 mail.login('hor1ey@mail.ru','twzr96KmMhnVPzm8vkmg')
 conn = psycopg2.connect(dbname=db_name, user=db_user, password=db_pass, host=db_host)
 cursor = conn.cursor()
+conn.autocommit = True
 
 def get_elgur_by_token(token, message_id):
     if check_date(message_id) >= 2:
