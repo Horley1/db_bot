@@ -8,15 +8,12 @@ from requests import post, get
 from json import loads,dumps
 from datetime import datetime
 from fernet import *
-from telebot import types
 
 bot = telebot.TeleBot(TOKEN)
 server = Flask(__name__)
 conn = psycopg2.connect(dbname=db_name, user=db_user, password=db_pass, host=db_host)
 cursor = conn.cursor()
 conn.autocommit = True
-keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
-keyboard.row("MENU")
 
 @bot.message_handler(commands=['start'])
 def start_message(message):
@@ -101,17 +98,8 @@ def reg_to_bd(message):
 
 @bot.message_handler(func=lambda message: True, content_types=['text'])
 def txt(message):
-    if message == "MENU":
-        types.ReplyKeyboardRemove()
-        keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
-        keyboard.row("⚙EDIT PROPERTIES⚙", "✔EDIT TYPES✔", "🔙BACK🔙")
-    elif message == "🔙BACK🔙":
-        keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
-        keyboard.row("MENU")
-
-    else:
-        res = bot.send_message(message.chat.id, phrases[randint(0, len(phrases) - 1)])
-        bot.send_sticker(message.chat.id, ids[randint(0, len(ids) - 1)], res.id)
+    res = bot.send_message(message.chat.id, phrases[randint(0, len(phrases) - 1)])
+    bot.send_sticker(message.chat.id, ids[randint(0, len(ids) - 1)], res.id)
 
 
 @server.route('/' + TOKEN, methods=['POST'])
