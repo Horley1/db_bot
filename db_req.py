@@ -62,7 +62,7 @@ def parsing_process(message_id):
                                 date = f'Дата: {" ".join([date[2], mon[date[1]], date[0]])}'
                                 subject = f"У тебя новая оценка по {sub[new_txt[i]['name']]}\n"
                                 mark = f"Оценка: <tg-spoiler> {new_txt[i]['marks'][j]['value']} ✅</tg-spoiler>\n"
-                                avr = f"Новый средний балл: {new_txt['average']}\n"
+                                avr = f"Новый средний балл: {new_txt[i]['average']}\n"
                                 try:
                                     bot.send_message(message_id, f"{subject}{mark}{ls_comm}{comm}{tp}{date}{avr}", parse_mode="HTML")
                                 except:
