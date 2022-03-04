@@ -12,8 +12,7 @@ from fernet import *
 
 bot = telebot.TeleBot(TOKEN)
 server = Flask(__name__)
-conn = psycopg2.connect(dbname='d23v4g77tn2j92', user='qzusajqercdmfq',
-                        password='36da4de8c545b260b07dccc490b56cee3fcc72ee52a073e7fb40409e8ccf47c4', host='ec2-52-31-217-108.eu-west-1.compute.amazonaws.com')
+conn = psycopg2.connect(dbname=db_name, user=db_user, password=db_pass, host=db_host)
 cursor = conn.cursor()
 conn.autocommit = True
 
