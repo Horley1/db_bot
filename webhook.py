@@ -3,6 +3,7 @@ import psycopg2
 from flask import Flask, request
 from config import *
 import telebot
+from telebot import types
 from random import randint
 from requests import post, get
 from json import loads,dumps
@@ -11,7 +12,8 @@ from fernet import *
 
 bot = telebot.TeleBot(TOKEN)
 server = Flask(__name__)
-conn = psycopg2.connect(dbname=db_name, user=db_user, password=db_pass, host=db_host)
+conn = psycopg2.connect(dbname='d23v4g77tn2j92', user='qzusajqercdmfq',
+                        password='36da4de8c545b260b07dccc490b56cee3fcc72ee52a073e7fb40409e8ccf47c4', host='ec2-52-31-217-108.eu-west-1.compute.amazonaws.com')
 cursor = conn.cursor()
 conn.autocommit = True
 
@@ -101,6 +103,11 @@ def txt(message):
     res = bot.send_message(message.chat.id, phrases[randint(0, len(phrases) - 1)])
     bot.send_sticker(message.chat.id, ids[randint(0, len(ids) - 1)], res.id)
 
+
+@bot.callback_query_handler(func=lambda c: c.data == 'button1')
+def process_callback_button1(callback_query):
+    bot.answer_callback_query(callback_query.id)
+    bot.send_message(callback_query.from_user.id, 'ОК!')
 
 @server.route('/' + TOKEN, methods=['POST'])
 def getMessage():

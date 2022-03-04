@@ -7,7 +7,8 @@ from datetime import datetime
 from fernet import *
 import smtplib
 import psycopg2
-import time
+from telebot import types
+from keyboards import *
 bot = telebot.TeleBot(TOKEN)
 
 mail = smtplib.SMTP_SSL('smtp.mail.ru', 465)
@@ -61,11 +62,14 @@ def parsing_process(message_id):
                                 date = f'Дата: {" ".join([date[2], mon[date[1]], date[0]])}'
                                 subject = f"У тебя новая оценка по {sub[new_txt[i]['name']]}\n"
                                 mark = f"Оценка: <tg-spoiler> {new_txt[i]['marks'][j]['value']} ✅</tg-spoiler>\n"
+                                avr = f"Новый средний балл: {new_txt['average']}\n"
                                 try:
-                                    bot.send_message(message_id, f"{subject}{mark}{ls_comm}{comm}{tp}{date}", parse_mode="HTML")
+                                    bot.send_message(message_id, f"{subject}{mark}{ls_comm}{comm}{tp}{date}{avr}", parse_mode="HTML")
                                 except:
                                     #banned by the user
                                     pass
+                                if "2" in mark:
+                                    make_debt(message_id, mark)
                 add_to_bd(message_id, new_txt)
     except Exception as e:
         new_txt = get_elgur_by_token(txt[3], message_id)
@@ -77,6 +81,8 @@ def parsing_process(message_id):
         except:
             pass
 
+def make_debt(message_id, mark):
+    bot.send_message(message_id, "Кажется, у тебя появилась задолжность.. Это так?🙄", reply_markup=keyboard1)
 
 def check_date(message_id):
     cursor.execute(f"SELECT * FROM data WHERE user_id={message_id}")
