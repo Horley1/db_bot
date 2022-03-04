@@ -9,6 +9,7 @@ from requests import post, get
 from json import loads,dumps
 from datetime import datetime
 from fernet import *
+import json
 
 bot = telebot.TeleBot(TOKEN)
 server = Flask(__name__)
@@ -105,8 +106,16 @@ def txt(message):
 
 @bot.callback_query_handler(func=lambda c: c.data == 'button1')
 def process_callback_button1(callback_query):
+    print(callback_query)
     bot.answer_callback_query(callback_query.id)
-    bot.send_message(callback_query.from_user.id, 'ОК!')
+    res = bot.send_message(callback_query.from_user.id, 'Окей!')
+    bot.send_sticker(callback_query.from_user.id, agree[randint(0, len(agree) - 1)], res.id)
+    cursor.execute(f"SELECT * FROM data WHERE user_id={callback_query.from_user.id}")
+    prev = json.loads(cursor.fetchone()[8])
+    prev.append({'id': callback_query.from_user.id})
+    values = [callback_query.from_user.id, str("'") + json.dumps(prev) + str("'")]
+    cursor.execute(f"UPDATE data SET debt = {values[1]} WHERE user_id = {values[0]}")
+
 
 @server.route('/' + TOKEN, methods=['POST'])
 def getMessage():
