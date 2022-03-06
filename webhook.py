@@ -115,8 +115,8 @@ def process_callback_button1(callback_query):
         db_request = cursor.fetchone()
         prev = json.loads(db_request[8])
         print(prev)
-        print(callback_query.message.message_id)
-        buf = json.loads(db_request[9])[callback_query.message.message_id]
+        print(str(callback_query.message.message_id))
+        buf = json.loads(db_request[9])[str(callback_query.message.message_id)]
         prev.append(buf)
         values = [callback_query.from_user.id, str("'") + json.dumps(prev) + str("'")]
         cursor.execute(f"UPDATE data SET debt = {values[1]} WHERE user_id = {values[0]}")
