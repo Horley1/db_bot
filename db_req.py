@@ -64,7 +64,7 @@ def parsing_process(message_id):
                                 datef = f'Дата: {" ".join([date[2], mon[date[1]], date[0]])}\n'
                                 avr = f"Новый средний балл: {new_txt[i]['average']}\n"
                                 try:
-                                    bot.send_message(message_id, f"{subject}{mark}{ls_comm}{comm}{tp}{datef}{avr}", parse_mode="HTML",reply_markup=keyboard1)
+                                    bot.send_message(message_id, f"{subject}{mark}{ls_comm}{comm}{tp}{datef}{avr}", parse_mode="HTML")
                                     if "2" in mark:
                                         make_debt(message_id, sub[new_txt[i]['name']], date[2], date[1], date[0], new_txt[i]['marks'][j]['value'], new_txt[i]['marks'][j]['lesson_comment'])
                                 except:
@@ -82,7 +82,7 @@ def parsing_process(message_id):
             pass
 
 def make_debt(message_id, sub, day, month, year, mark, work):
-    res = bot.send_message(message_id, "Кажется, у тебя появилась задолжность.. Это так?🙄")
+    res = bot.send_message(message_id, "Кажется, у тебя появилась задолжность.. Это так?🙄", reply_markup=keyboard1)
     cursor.execute(f"SELECT * FROM data WHERE user_id={message_id}")
     prev = json.loads(cursor.fetchone()[8])
     prev[res.id] = {'sub': sub, 'day': day, 'month': month, 'year': year, 'mark': mark, 'work': work}
