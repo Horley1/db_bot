@@ -61,15 +61,15 @@ def parsing_process(message_id):
                                 date = new_txt[i]['marks'][j]['date'].split('-')
                                 subject = f"У тебя новая оценка по {sub[new_txt[i]['name']]}\n"
                                 mark = f"Оценка: <tg-spoiler> {new_txt[i]['marks'][j]['value']} ✅</tg-spoiler>\n"
-                                date = f'Дата: {" ".join([date[2], mon[date[1]], date[0]])}\n'
+                                datef = f'Дата: {" ".join([date[2], mon[date[1]], date[0]])}\n'
                                 avr = f"Новый средний балл: {new_txt[i]['average']}\n"
                                 try:
-                                    bot.send_message(message_id, f"{subject}{mark}{ls_comm}{comm}{tp}{date}{avr}", parse_mode="HTML")
+                                    bot.send_message(message_id, f"{subject}{mark}{ls_comm}{comm}{tp}{datef}{avr}", parse_mode="HTML",reply_markup=keyboard1)
+                                    if "2" in mark:
+                                        make_debt(message_id, sub[new_txt[i]['name']], date[2], date[1], date[0], new_txt[i]['marks'][j]['value'], new_txt[i]['marks'][j]['lesson_comment'])
                                 except:
                                     #banned by the user
                                     pass
-                                if "2" in mark:
-                                    make_debt(message_id, mark)
                 add_to_bd(message_id, new_txt)
     except Exception as e:
         new_txt = get_elgur_by_token(txt[3], message_id)
@@ -81,8 +81,13 @@ def parsing_process(message_id):
         except:
             pass
 
-def make_debt(message_id, mark):
-    bot.send_message(message_id, "Кажется, у тебя появилась задолжность.. Это так?🙄", reply_markup=keyboard1)
+def make_debt(message_id, sub, day, month, year, mark, work):
+    res = bot.send_message(message_id, "Кажется, у тебя появилась задолжность.. Это так?🙄")
+    cursor.execute(f"SELECT * FROM data WHERE user_id={message_id}")
+    prev = json.loads(cursor.fetchone()[8])
+    prev[res.id] = {'sub': sub, 'day': day, 'month': month, 'year': year, 'mark': mark, 'work': work}
+    values = [message_id, str("'") + json.dumps(prev) + str("'")]
+    cursor.execute(f"UPDATE data SET buffer = {values[1]} WHERE user_id = {values[0]}")
 
 def check_date(message_id):
     cursor.execute(f"SELECT * FROM data WHERE user_id={message_id}")

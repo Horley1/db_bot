@@ -111,8 +111,10 @@ def process_callback_button1(callback_query):
     res = bot.send_message(callback_query.from_user.id, 'Окей!')
     bot.send_sticker(callback_query.from_user.id, agree[randint(0, len(agree) - 1)], res.id)
     cursor.execute(f"SELECT * FROM data WHERE user_id={callback_query.from_user.id}")
-    prev = json.loads(cursor.fetchone()[8])
-    prev.append({'id': callback_query.from_user.id})
+    db_request = cursor.fetchone()
+    prev = json.loads(db_request[8])
+    buf = json.loads(db_request[9])[callback_query['message']['id']]
+    prev.append(buf)
     values = [callback_query.from_user.id, str("'") + json.dumps(prev) + str("'")]
     cursor.execute(f"UPDATE data SET debt = {values[1]} WHERE user_id = {values[0]}")
 
