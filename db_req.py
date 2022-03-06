@@ -84,7 +84,7 @@ def parsing_process(message_id):
 def make_debt(message_id, sub, day, month, year, mark, work):
     res = bot.send_message(message_id, "Кажется, у тебя появилась задолжность.. Это так?🙄", reply_markup=keyboard1)
     cursor.execute(f"SELECT * FROM data WHERE user_id={message_id}")
-    prev = json.loads(cursor.fetchone()[8])
+    prev = json.loads(cursor.fetchone()[9])
     print(prev)
     prev[res.id] = {'sub': sub, 'day': day, 'month': month, 'year': year, 'mark': mark, 'work': work}
     print(prev)
