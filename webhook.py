@@ -106,18 +106,23 @@ def txt(message):
 
 @bot.callback_query_handler(func=lambda c: c.data == 'button1')
 def process_callback_button1(callback_query):
-    print(callback_query)
-    bot.answer_callback_query(callback_query.id)
-    res = bot.send_message(callback_query.from_user.id, 'Окей!')
-    bot.send_sticker(callback_query.from_user.id, agree[randint(0, len(agree) - 1)], res.id)
-    cursor.execute(f"SELECT * FROM data WHERE user_id={callback_query.from_user.id}")
-    db_request = cursor.fetchone()
-    prev = json.loads(db_request[8])
-    buf = json.loads(db_request[9])[callback_query['message']['id']]
-    prev.append(buf)
-    values = [callback_query.from_user.id, str("'") + json.dumps(prev) + str("'")]
-    cursor.execute(f"UPDATE data SET debt = {values[1]} WHERE user_id = {values[0]}")
-
+    try:
+        print(callback_query)
+        bot.answer_callback_query(callback_query.id)
+        res = bot.send_message(callback_query.from_user.id, 'Окей!')
+        bot.send_sticker(callback_query.from_user.id, agree[randint(0, len(agree) - 1)], res.id)
+        cursor.execute(f"SELECT * FROM data WHERE user_id={callback_query.from_user.id}")
+        db_request = cursor.fetchone()
+        prev = json.loads(db_request[8])
+        print(prev)
+        print(callback_query['message']['id'])
+        buf = json.loads(db_request[9])[callback_query['message']['id']]
+        prev.append(buf)
+        values = [callback_query.from_user.id, str("'") + json.dumps(prev) + str("'")]
+        cursor.execute(f"UPDATE data SET debt = {values[1]} WHERE user_id = {values[0]}")
+    except Exception as e:
+        print("error")
+        print(e)
 
 @server.route('/' + TOKEN, methods=['POST'])
 def getMessage():
