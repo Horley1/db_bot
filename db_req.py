@@ -48,16 +48,22 @@ def parsing_process(message_id):
                             if new_txt[i]['marks'][j]['value'] not in ["Н", "н", "ОП", "оп", "Оп"]:
                                 if new_txt[i]['marks'][j]['lesson_comment'] == None or new_txt[i]['marks'][j]['lesson_comment'] == "":
                                     ls_comm = ""
+                                    debt_ls_comm = ""
                                 else:
                                     ls_comm = f"Тип: {new_txt[i]['marks'][j]['lesson_comment']}\n"
+                                    debt_ls_comm = new_txt[i]['marks'][j]['lesson_comment']
                                 if new_txt[i]['marks'][j]['comment'] == None or new_txt[i]['marks'][j]['comment'] == "":
                                     comm = ""
+                                    debt_comm = ""
                                 else:
                                     comm = f"Комментарий: {new_txt[i]['marks'][j]['comment']}\n"
+                                    debt_comm = new_txt[i]['marks'][j]['comment']
                                 if 'mtype' not in new_txt[i]['marks'][j] or (new_txt[i]['marks'][j]['mtype']['type'] == None or new_txt[i]['marks'][j]['mtype']['type'] == ""):
                                     tp = ""
+                                    debt_type = ""
                                 else:
                                     tp = f"Пояснение: {new_txt[i]['marks'][j]['mtype']['type']}\n"
+                                    debt_type = new_txt[i]['marks'][j]['mtype']['type']
                                 date = new_txt[i]['marks'][j]['date'].split('-')
                                 subject = f"У тебя новая оценка по {sub[new_txt[i]['name']]}\n"
                                 mark = f"Оценка: <tg-spoiler> {new_txt[i]['marks'][j]['value']} ✅</tg-spoiler>\n"
@@ -66,7 +72,7 @@ def parsing_process(message_id):
                                 try:
                                     bot.send_message(message_id, f"{subject}{mark}{ls_comm}{comm}{tp}{datef}{avr}", parse_mode="HTML")
                                     if "2" in mark:
-                                        make_debt(message_id, sub[new_txt[i]['name']], date[2], date[1], date[0], new_txt[i]['marks'][j]['value'], new_txt[i]['marks'][j]['lesson_comment'])
+                                        make_debt(message_id, sub[new_txt[i]['name']], date[2], date[1], date[0], new_txt[i]['marks'][j]['value'], debt_ls_comm, debt_comm, debt_type, datef)
                                 except:
                                     #banned by the user
                                     pass
@@ -81,23 +87,45 @@ def parsing_process(message_id):
         except:
             pass
 
-def make_debt(message_id, sub, day, month, year, mark, work):
+def debt_parse(message_id):
+    cursor.execute(f"SELECT * FROM data WHERE user_id={message_id}")
+    debt = json.loads(cursor.fetchone()[8])
+    for elem in debt:
+        day = elem['day']
+        #{'sub': sub, 'day': day, 'month': month, 'year': year,
+        # 'mark': mark,
+        # 'ls_comm': ls_comm, 'comm': comm, 'type': type}
+        month = elem['month'] if elem['month'][0] != '0' else elem['month'][1:]
+        year = elem['year']
+        dif = (datetime.now().date() - datetime(int(year), int(month), int(day)).date()).days
+        if dif > 5:
+            debt_alert(message_id, elem)
+
+def debt_alert(message_id, debt):
+    if debt['ls_comm'] != '':
+        final_comm = f"Комментарий: {debt['ls_comm']}"
+    elif debt['type'] != '':
+        final_comm = f"Комментарий: {debt['type']}"
+    else:
+        final_comm = ''
+
+    bot.send_message(message_id, f"Братан! У тебя кажется задолжность по {debt['sub']}\n{debt['date']}\n{final_comm}", reply_markup=keyboard2)
+
+
+def make_debt(message_id, sub, day, month, year, mark, ls_comm, comm, type, datef):
     res = bot.send_message(message_id, "Кажется, у тебя появилась задолжность.. Это так?🙄", reply_markup=keyboard1)
     cursor.execute(f"SELECT * FROM data WHERE user_id={message_id}")
     prev = json.loads(cursor.fetchone()[9])
-    print(prev)
-    prev[res.id] = {'sub': sub, 'day': day, 'month': month, 'year': year, 'mark': mark, 'work': work}
-    print(prev)
+    prev[res.id] = {'sub': sub, 'day': day, 'month': month, 'year': year, 'mark': mark, 'ls_comm': ls_comm, 'comm': comm, 'type': type, 'date': datef}
     values = [message_id, str("'") + json.dumps(prev) + str("'")]
     cursor.execute(f"UPDATE data SET buffer = {values[1]} WHERE user_id = {values[0]}")
 
 def check_date(message_id):
     cursor.execute(f"SELECT * FROM data WHERE user_id={message_id}")
-    day = cursor.fetchone()[5]
-    cursor.execute(f"SELECT * FROM data WHERE user_id={message_id}")
-    month = cursor.fetchone()[6]
-    cursor.execute(f"SELECT * FROM data WHERE user_id={message_id}")
-    year = cursor.fetchone()[7]
+    req = cursor.fetchone()
+    day = req[5]
+    month = req[6]
+    year = req[7]
     prev = datetime(year, month, day).date()
     now = datetime.now().date()
     return (now - prev).days
@@ -138,3 +166,4 @@ if __name__ == '__main__' :
         test = cursor.fetchall()
         for elem in test:
             parsing_process(elem[0])
+            debt_parse(elem[0])
