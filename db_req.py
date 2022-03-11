@@ -90,6 +90,8 @@ def parsing_process(message_id):
 def debt_parse(message_id):
     cursor.execute(f"SELECT * FROM data WHERE user_id={message_id}")
     debt = json.loads(cursor.fetchone()[8])
+    if debt == []:
+        return
     for elem in debt:
         day = elem['day']
         #{'sub': sub, 'day': day, 'month': month, 'year': year,
