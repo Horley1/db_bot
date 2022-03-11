@@ -97,7 +97,7 @@ def debt_parse(message_id):
         dif = (datetime.now().date() - prev_date).days
         if dif > 5:
             debt_alert(message_id, elem)
-            elem['upd_date'] = datetime.now().date()
+            elem['upd_date'] = datetime.now().date().strftime('%Y-%m-%d')
 
 
 def debt_alert(message_id, debt):
