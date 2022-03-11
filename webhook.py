@@ -116,7 +116,7 @@ def process_callback_button1(callback_query):
         prev_debt = json.loads(db_request[8])
         prev_buf = json.loads(db_request[9])
         buf = prev_buf[str(callback_query.message.message_id)]
-        buf['upd_date'] = datetime.date()
+        buf['upd_date'] = datetime.now().date()
         prev_debt.append(buf)
         prev_buf.pop(str(callback_query.message.message_id))
         values = [callback_query.from_user.id, str("'") + json.dumps(prev_debt) + str("'"), str("'") + json.dumps(prev_buf) + str("'")]
