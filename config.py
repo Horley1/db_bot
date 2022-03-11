@@ -33,6 +33,20 @@ ids =  ["CAACAgIAAxkBAAED5jliB622rYVv8eZEJhSU02AfXY6HEwACCwEAAlKJkSNKMfbkP3tfNSM
         "CAACAgIAAxkBAAED_Y1iFhIOrVHZfxaHorUWX1VRcjZqMwAC_hEAAkNhyUsXQJqa2HnLdiME",
         "CAACAgIAAxkBAAED_Y9iFhIVSq2E7jyO7z--23m8CXlqUQACdxIAAr1BCUhrfC2MNLR0ziME"]
 
+agree = ["CAACAgIAAxkBAAEEDXxiIld2n2kBTRiecPL4yWAGv-C4wgACXRgAAg1MOEgoCfq_PJ5zKCME",
+         "CAACAgIAAxkBAAEEDX5iIleCN9dODPXbjksE7opKAAEiy7MAAhYMAALn6rFJM9pxG82qStAjBA",
+         "CAACAgQAAxkBAAEEDYBiIleP0fN0JpiDpYM3hHASy75vPAAC6gEAApUkhCIh1qk9Eg3wxiME",
+         "CAACAgIAAxkBAAEEDYJiIleeCqQOSjeLVhdUoFFf69IUvgAC1RAAAkYYSUrRLe7CNv_0DCME",
+         "CAACAgIAAxkBAAEEDYRiIleu74-49169KbC3FI1dWjcuHgACygQAAhyS0gM_ER5qcnge7iME",
+         "CAACAgIAAxkBAAEEDYZiIlfBe_iEYrfnUQrNoJkaJzTpMQACfQADmS9LCsfb0MCpuOlOIwQ",
+         "CAACAgIAAxkBAAEEDYhiIlfHCKdfdmLCxmXenRZPnyocyQACyxIAApf9SEl0G3pXyFU9LiME",
+         "CAACAgIAAxkBAAEEDYpiIlfL_0lmjvbu9mgT_f_o1qfeeQACWAADlJzpD_14E4scLipgIwQ",
+         "CAACAgIAAxkBAAEEDY5iIlfTaO7E3JxoKgFFob0TgvrCfwAC6AQAAvPyjj-be41RjBUoYyME",
+         "CAACAgIAAxkBAAEEDZBiIlfWm0j4a5CtBrSgO6c4vbHM8wACVAADX8p-C_ToNjLl5Er_IwQ",
+         "CAACAgIAAxkBAAEEDZJiIlfnOngQ55VXzGxSCD1H7NwZvwACwgMAAuSsUQ-2lANp-uCBWSME",
+         "CAACAgIAAxkBAAEEDZRiIlfzB0Z8s5xBiL6kNUQK8W2RMQACBQADRIw6N_kJEwa-onktIwQ",
+         "CAACAgIAAxkBAAEEDZZiIlgCQ4jTbLQdAfzxXpwysuVaBQACVwADuRtZC7Tl71Hzx6JfIwQ"]
+
 
 phrases = ["Я не знаю такой команды(((. Для регистрации напиши: /reg",
     "Ты вообще нормальый?? Напиши: /reg и не позорься!",

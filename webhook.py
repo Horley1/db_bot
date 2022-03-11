@@ -3,11 +3,13 @@ import psycopg2
 from flask import Flask, request
 from config import *
 import telebot
+from telebot import types
 from random import randint
 from requests import post, get
 from json import loads,dumps
 from datetime import datetime
 from fernet import *
+import json
 
 bot = telebot.TeleBot(TOKEN)
 server = Flask(__name__)
@@ -101,6 +103,26 @@ def txt(message):
     res = bot.send_message(message.chat.id, phrases[randint(0, len(phrases) - 1)])
     bot.send_sticker(message.chat.id, ids[randint(0, len(ids) - 1)], res.id)
 
+
+@bot.callback_query_handler(func=lambda c: c.data == 'button1')
+def process_callback_button1(callback_query):
+    try:
+        print(callback_query)
+        bot.answer_callback_query(callback_query.id)
+        res = bot.send_message(callback_query.from_user.id, 'Окей!')
+        bot.send_sticker(callback_query.from_user.id, agree[randint(0, len(agree) - 1)], res.id)
+        cursor.execute(f"SELECT * FROM data WHERE user_id={callback_query.from_user.id}")
+        db_request = cursor.fetchone()
+        prev_debt = json.loads(db_request[8])
+        prev_buf = json.loads(db_request[9])
+        buf = prev_buf[str(callback_query.message.message_id)]
+        prev_debt.append(buf)
+        prev_buf.pop(str(callback_query.message.message_id))
+        values = [callback_query.from_user.id, str("'") + json.dumps(prev_debt) + str("'"), str("'") + json.dumps(prev_buf) + str("'")]
+        cursor.execute(f"UPDATE data SET (debt, buffer) = {values[1], values[2]} WHERE user_id = {values[0]}")
+    except Exception as e:
+        print("error")
+        print(e)
 
 @server.route('/' + TOKEN, methods=['POST'])
 def getMessage():
