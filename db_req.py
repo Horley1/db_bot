@@ -72,7 +72,7 @@ def parsing_process(message_id):
                                 try:
                                     bot.send_message(message_id, f"{subject}{mark}{ls_comm}{comm}{tp}{datef}{avr}", parse_mode="HTML")
                                     if "2" in mark:
-                                        make_debt(message_id, sub[new_txt[i]['name']], date[2], date[1], date[0], new_txt[i]['marks'][j]['value'], debt_ls_comm, debt_comm, debt_type, datef)
+                                        make_debt(message_id, sub[new_txt[i]['name']], new_txt[i]['marks'][j]['value'], debt_ls_comm, debt_comm, debt_type, datef)
                                 except:
                                     #banned by the user
                                     pass
@@ -93,15 +93,12 @@ def debt_parse(message_id):
     if debt == []:
         return
     for elem in debt:
-        day = elem['day']
-        #{'sub': sub, 'day': day, 'month': month, 'year': year,
-        # 'mark': mark,
-        # 'ls_comm': ls_comm, 'comm': comm, 'type': type}
-        month = elem['month'] if elem['month'][0] != '0' else elem['month'][1:]
-        year = elem['year']
-        dif = (datetime.now().date() - datetime(int(year), int(month), int(day)).date()).days
+        prev_date = datetime.strptime(elem['upd_date'], '%Y-%m-%d')
+        dif = (datetime.now().date() - prev_date).days
         if dif > 5:
             debt_alert(message_id, elem)
+            elem['upd_date'] = datetime.date()
+
 
 def debt_alert(message_id, debt):
     if debt['ls_comm'] != '':
@@ -114,11 +111,11 @@ def debt_alert(message_id, debt):
     bot.send_message(message_id, f"Братан! У тебя кажется задолжность по {debt['sub']}\n{debt['date']}\n{final_comm}", reply_markup=keyboard2)
 
 
-def make_debt(message_id, sub, day, month, year, mark, ls_comm, comm, type, datef):
+def make_debt(message_id, sub, mark, ls_comm, comm, type, datef):
     res = bot.send_message(message_id, "Кажется, у тебя появилась задолжность.. Это так?🙄", reply_markup=keyboard1)
     cursor.execute(f"SELECT * FROM data WHERE user_id={message_id}")
     prev = json.loads(cursor.fetchone()[9])
-    prev[res.id] = {'sub': sub, 'day': day, 'month': month, 'year': year, 'mark': mark, 'ls_comm': ls_comm, 'comm': comm, 'type': type, 'date': datef}
+    prev[res.id] = {'sub': sub, 'mark': mark, 'ls_comm': ls_comm, 'comm': comm, 'type': type, 'date': datef}
     values = [message_id, str("'") + json.dumps(prev) + str("'")]
     cursor.execute(f"UPDATE data SET buffer = {values[1]} WHERE user_id = {values[0]}")
 
