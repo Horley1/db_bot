@@ -119,7 +119,7 @@ def process_callback_button1(callback_query):
         prev_debt.append(buf)
         prev_buf.pop(str(callback_query.message.message_id))
         values = [callback_query.from_user.id, str("'") + json.dumps(prev_debt) + str("'"), str("'") + json.dumps(prev_buf) + str("'")]
-        cursor.execute(f"UPDATE data SET (debt, buffer) = {values[1], values[2]} WHERE user_id = {values[0]}")
+        cursor.execute(f"UPDATE data SET (debt, buffer) = ({values[1]}, {values[2]}) WHERE user_id = {values[0]}")
     except Exception as e:
         print("error")
         print(e)
