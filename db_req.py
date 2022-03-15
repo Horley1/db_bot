@@ -67,10 +67,11 @@ def parsing_process(message_id):
                                 date = new_txt[i]['marks'][j]['date'].split('-')
                                 subject = f"У тебя новая оценка по {sub[new_txt[i]['name']]}\n"
                                 mark = f"Оценка: <tg-spoiler> {new_txt[i]['marks'][j]['value']} ✅</tg-spoiler>\n"
+                                avr = f"Новый средний балл: <tg-spoiler> {new_txt[i]['average']} </tg-spoiler>\n"
                                 datef = f'Дата: {" ".join([date[2], mon[date[1]], date[0]])}\n'
-                                avr = f"Новый средний балл: {new_txt[i]['average']}\n"
                                 try:
-                                    bot.send_message(message_id, f"{subject}{mark}{ls_comm}{comm}{tp}{datef}{avr}", parse_mode="HTML")
+                                    bot.send_message(message_id, f"{subject}{mark}{avr}{ls_comm}{comm}{tp}{datef}", parse_mode="HTML")
+                                    print("SENT!")
                                     if "2" in mark:
                                         make_debt(message_id, sub[new_txt[i]['name']], new_txt[i]['marks'][j]['value'], debt_ls_comm, debt_comm, debt_type, datef)
                                 except:
@@ -93,11 +94,14 @@ def debt_parse(message_id):
     if debt == []:
         return
     for elem in debt:
-        prev_date = datetime.strptime(elem['upd_date'], '%Y-%m-%d')
+        prev_date = datetime.strptime(elem['upd_date'], '%Y-%m-%d').date()
         dif = (datetime.now().date() - prev_date).days
         if dif > 5:
             debt_alert(message_id, elem)
             elem['upd_date'] = datetime.now().date().strftime('%Y-%m-%d')
+    value = str("'") + json.dumps(debt) + str("'")
+    cursor.execute(f"UPDATE data SET debt = {value} WHERE user_id = {message_id}")
+
 
 
 def debt_alert(message_id, debt):
@@ -164,5 +168,6 @@ if __name__ == '__main__' :
         cursor.execute("SELECT user_id FROM data")
         test = cursor.fetchall()
         for elem in test:
+            print(elem)
             parsing_process(elem[0])
             debt_parse(elem[0])
