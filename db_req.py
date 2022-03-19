@@ -9,17 +9,20 @@ import smtplib
 import psycopg2
 from telebot import types
 from keyboards import *
-bot = telebot.TeleBot(TOKEN)
+from concurrent.futures import ProcessPoolExecutor
 
-mail = smtplib.SMTP_SSL('smtp.mail.ru', 465)
-mail.login('hor1ey@mail.ru','twzr96KmMhnVPzm8vkmg')
+
+bot = telebot.TeleBot(TOKEN)
+# mail = smtplib.SMTP_SSL('smtp.mail.ru', 465)
+# mail.login('hor1ey@mail.ru', 'twzr96KmMhnVPzm8vkmg')
 conn = psycopg2.connect(dbname=db_name, user=db_user, password=db_pass, host=db_host)
 cursor = conn.cursor()
 conn.autocommit = True
 
-def get_elgur_by_token(token, message_id):
-    if check_date(message_id) >= 2:
-        token = change_token(message_id)
+
+def get_elgur_by_token(token, message_id, req):
+    if check_date(message_id, req) >= 2:
+        token = change_token(message_id, req)
         cursor.execute(f"UPDATE data SET (day, month, year) = ({datetime.now().date().day}, {datetime.now().date().month},{datetime.now().date().year} ) WHERE user_id = {message_id}")
     r2 = get('https://api.eljur.ru/api/getmarks', params={
         'auth_token': token,
@@ -32,12 +35,13 @@ def get_elgur_by_token(token, message_id):
     lst_marks = r2.json()['response']['result']['students'][student_code]['lessons']
     return lst_marks
 
+
 def parsing_process(message_id):
     try:
         cursor.execute(f"SELECT * FROM data WHERE user_id={message_id}")
-        txt = cursor.fetchone()
-        new_txt = get_elgur_by_token(txt[3], message_id)
-        txt = json.loads(txt[4])
+        req = cursor.fetchone()
+        new_txt = get_elgur_by_token(req[3], message_id, req)
+        txt = json.loads(req[4])
         if new_txt != txt:
             for i in range(16):
                 if txt[i] != new_txt[i]:
@@ -73,7 +77,7 @@ def parsing_process(message_id):
                                     bot.send_message(message_id, f"{subject}{mark}{avr}{ls_comm}{comm}{tp}{datef}", parse_mode="HTML")
                                     print("SENT!")
                                     if "2" in mark:
-                                        make_debt(message_id, sub[new_txt[i]['name']], new_txt[i]['marks'][j]['value'], debt_ls_comm, debt_comm, debt_type, datef)
+                                        make_debt(message_id, sub[new_txt[i]['name']], new_txt[i]['marks'][j]['value'], debt_ls_comm, debt_comm, debt_type, datef, req)
                                 except:
                                     #banned by the user
                                     pass
@@ -83,10 +87,11 @@ def parsing_process(message_id):
         add_to_bd(message_id, new_txt)
         print("Error")
         print(e)
-        try:
-            mail.sendmail("hor1ey@mail.ru", "ma.kalmykov23@gmail.com", str(e))
-        except:
-            pass
+        # try:
+        #     mail.sendmail("hor1ey@mail.ru", "ma.kalmykov23@gmail.com", str(e))
+        # except:
+        #     pass
+
 
 def debt_parse(message_id):
     cursor.execute(f"SELECT * FROM data WHERE user_id={message_id}")
@@ -97,11 +102,11 @@ def debt_parse(message_id):
         prev_date = datetime.strptime(elem['upd_date'], '%Y-%m-%d').date()
         dif = (datetime.now().date() - prev_date).days
         if dif > 5:
-            debt_alert(message_id, elem)
+            res = debt_alert(message_id, elem)
             elem['upd_date'] = datetime.now().date().strftime('%Y-%m-%d')
+            elem['message'] = str(res.id)
     value = str("'") + json.dumps(debt) + str("'")
     cursor.execute(f"UPDATE data SET debt = {value} WHERE user_id = {message_id}")
-
 
 
 def debt_alert(message_id, debt):
@@ -112,20 +117,19 @@ def debt_alert(message_id, debt):
     else:
         final_comm = ''
 
-    bot.send_message(message_id, f"Братан! У тебя кажется задолжность по {debt['sub']}\n{debt['date']}\n{final_comm}", reply_markup=keyboard2)
+    res = bot.send_message(message_id, f"Братан! У тебя кажется задолжность по {debt['sub']}😳\n{debt['date'][:-1]}🗓\n{final_comm}", reply_markup=keyboard2)
+    return res
 
 
-def make_debt(message_id, sub, mark, ls_comm, comm, type, datef):
+def make_debt(message_id, sub, mark, ls_comm, comm, type, datef, req):
     res = bot.send_message(message_id, "Кажется, у тебя появилась задолжность.. Это так?🙄", reply_markup=keyboard1)
-    cursor.execute(f"SELECT * FROM data WHERE user_id={message_id}")
-    prev = json.loads(cursor.fetchone()[9])
-    prev[res.id] = {'sub': sub, 'mark': mark, 'ls_comm': ls_comm, 'comm': comm, 'type': type, 'date': datef}
+    prev = json.loads(req[9])
+    prev[res.id] = {'sub': sub, 'mark': mark, 'ls_comm': ls_comm, 'comm': comm, 'type': type, 'date': datef, 'message': '', 'upd_date' : datetime.now().date().strftime('%Y-%m-%d')}
     values = [message_id, str("'") + json.dumps(prev) + str("'")]
     cursor.execute(f"UPDATE data SET buffer = {values[1]} WHERE user_id = {values[0]}")
 
-def check_date(message_id):
-    cursor.execute(f"SELECT * FROM data WHERE user_id={message_id}")
-    req = cursor.fetchone()
+
+def check_date(message_id, req):
     day = req[5]
     month = req[6]
     year = req[7]
@@ -142,11 +146,9 @@ def decode(data):
     return str(decrypted_text)[2:-1]
 
 
-def change_token(message_id):
-    cursor.execute(f"SELECT * FROM data WHERE user_id={message_id}")
-    login = cursor.fetchone()[1]
-    cursor.execute(f"SELECT * FROM data WHERE user_id={message_id}")
-    password = cursor.fetchone()[2]
+def change_token(message_id, req):
+    login = req[1]
+    password = req[2]
     r = post('https://api.eljur.ru/api/auth', data={
         'login': decode(login),
         'password': decode(password),
@@ -159,15 +161,20 @@ def change_token(message_id):
     cursor.execute(f"UPDATE data SET token = {value} WHERE user_id = {message_id}")
     return token
 
+
 def add_to_bd(message_id, new_list):
     values = [message_id, str("'") + json.dumps(new_list) + str("'")]
     cursor.execute(f"UPDATE data SET last_marks = {values[1]} WHERE user_id = {values[0]}")
 
+
 if __name__ == '__main__' :
     while True:
-        cursor.execute("SELECT user_id FROM data")
-        test = cursor.fetchall()
-        for elem in test:
-            print(elem)
-            parsing_process(elem[0])
-            debt_parse(elem[0])
+        try:
+            cursor.execute("SELECT user_id FROM data")
+            test = cursor.fetchall()
+            with ProcessPoolExecutor() as executor:
+                for elem in test:
+                    executor.submit(parsing_process, elem[0])
+                    executor.submit(debt_parse, elem[0])
+        except Exception as e:
+            print(e)
