@@ -119,10 +119,30 @@ def process_callback_button1(callback_query):
         prev_debt.append(buf)
         prev_buf.pop(str(callback_query.message.message_id))
         values = [callback_query.from_user.id, str("'") + json.dumps(prev_debt) + str("'"), str("'") + json.dumps(prev_buf) + str("'")]
-        cursor.execute(f"UPDATE data SET (debt, buffer) = {values[1], values[2]} WHERE user_id = {values[0]}")
+        cursor.execute(f"UPDATE data SET debt = {values[1]}, buffer = {values[2]} WHERE user_id = {values[0]}")
     except Exception as e:
         print("error")
         print(e)
+
+
+@bot.callback_query_handler(func=lambda c: c.data == 'button2')
+def process_callback_button2(callback_query):
+    try:
+        bot.answer_callback_query(callback_query.id)
+        bot.send_message(callback_query.from_user.id, 'Красава, одной двойкой меньше!')
+        cursor.execute(f"SELECT * FROM data WHERE user_id={callback_query.from_user.id}")
+        db_request = cursor.fetchone()
+        debt = json.loads(db_request[8])
+        for i in range(len(debt)):
+            if debt[i]['message'] == str(callback_query.message.message_id):
+                debt.pop(i)
+
+        values = [callback_query.from_user.id, str("'") + json.dumps(debt) + str("'")]
+        cursor.execute(f"UPDATE data SET debt = {values[1]} WHERE user_id = {values[0]}")
+    except Exception as e:
+        print("error")
+        print(e)
+
 
 @server.route('/' + TOKEN, methods=['POST'])
 def getMessage():
