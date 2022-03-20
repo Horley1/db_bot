@@ -1,5 +1,5 @@
 TOKEN = '5199364372:AAGnaM9JbpyH2_JjTpCi1zb3EN5nWUtiwmE'
-URL = 'https://elgubot.herokuapp.com/' + TOKEN
+URL = 'https://elbotv2.herokuapp.com/' + TOKEN
 ids =  ["CAACAgIAAxkBAAED5jliB622rYVv8eZEJhSU02AfXY6HEwACCwEAAlKJkSNKMfbkP3tfNSME",
         "CAACAgIAAxkBAAED5jtiB627ZWPy4SQYjXy4mT_uxr7f5wACWwADwZxgDNjYPseA8L6OIwQ",
         "CAACAgIAAxkBAAED5j1iB62_gxfmocZbsXvbUzcQb7TPIwACOgEAAlKJkSM5H9SlIyE44CME",
