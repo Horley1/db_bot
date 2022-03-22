@@ -3,6 +3,7 @@ from requests import *
 from json import *
 from config import *
 import json
+import time
 from datetime import datetime
 from fernet import *
 import smtplib
@@ -10,20 +11,21 @@ import psycopg2
 from telebot import types
 from keyboards import *
 from concurrent.futures import ProcessPoolExecutor
+from concurrent.futures import *
+from psycopg2.pool import ThreadedConnectionPool
+from psycopg2.pool import *
 
 
 bot = telebot.TeleBot(TOKEN)
 # mail = smtplib.SMTP_SSL('smtp.mail.ru', 465)
 # mail.login('hor1ey@mail.ru', 'twzr96KmMhnVPzm8vkmg')
-conn = psycopg2.connect(dbname=db_name, user=db_user, password=db_pass, host=db_host)
-cursor = conn.cursor()
-conn.autocommit = True
 
 
-def get_elgur_by_token(token, message_id, req):
+
+def get_elgur_by_token(token, message_id, req, tcp_cursor):
     if check_date(message_id, req) >= 2:
-        token = change_token(message_id, req)
-        cursor.execute(f"UPDATE data SET (day, month, year) = ({datetime.now().date().day}, {datetime.now().date().month},{datetime.now().date().year} ) WHERE user_id = {message_id}")
+        token = change_token(message_id, req, tcp_cursor)
+        tcp_cursor.execute(f"UPDATE data SET (day, month, year) = ({datetime.now().date().day}, {datetime.now().date().month},{datetime.now().date().year} ) WHERE user_id = {message_id}")
     r2 = get('https://api.eljur.ru/api/getmarks', params={
         'auth_token': token,
         'vendor': '2007',
@@ -38,15 +40,19 @@ def get_elgur_by_token(token, message_id, req):
 
 def parsing_process(message_id):
     try:
-        cursor.execute(f"SELECT * FROM data WHERE user_id={message_id}")
-        req = cursor.fetchone()
-        new_txt = get_elgur_by_token(req[3], message_id, req)
+        connection = tcp.getconn()
+        tcp_cursor = connection.cursor()
+        connection.autocommit = True
+        tcp_cursor.execute(f"SELECT * FROM data WHERE user_id={message_id}")
+        req = tcp_cursor.fetchone()
+        new_txt = get_elgur_by_token(req[3], message_id, req, tcp_cursor)
         txt = json.loads(req[4])
         if new_txt != txt:
             for i in range(16):
                 if txt[i] != new_txt[i]:
                     ln1 = len(txt[i]['marks'])
                     ln2 = len(new_txt[i]['marks'])
+                    print("NOT EQUAL")
                     for j in range(ln2):
                         if j > len(txt[i]['marks']) - 1 or new_txt[i]['marks'][j] != txt[i]['marks'][j]:
                             if new_txt[i]['marks'][j]['value'] not in ["Н", "н", "ОП", "оп", "Оп"]:
@@ -77,25 +83,30 @@ def parsing_process(message_id):
                                     bot.send_message(message_id, f"{subject}{mark}{avr}{ls_comm}{comm}{tp}{datef}", parse_mode="HTML")
                                     print("SENT!")
                                     if "2" in mark:
-                                        make_debt(message_id, sub[new_txt[i]['name']], new_txt[i]['marks'][j]['value'], debt_ls_comm, debt_comm, debt_type, datef, req)
+                                        make_debt(message_id, sub[new_txt[i]['name']], new_txt[i]['marks'][j]['value'], debt_ls_comm, debt_comm, debt_type, datef, req, tcp_cursor)
                                 except:
                                     #banned by the user
                                     pass
-                add_to_bd(message_id, new_txt)
+                add_to_bd(message_id, new_txt, tcp_cursor)
+
     except Exception as e:
         new_txt = get_elgur_by_token(txt[3], message_id)
-        add_to_bd(message_id, new_txt)
+        add_to_bd(message_id, new_txt, tcp_cursor)
         print("Error")
         print(e)
         # try:
         #     mail.sendmail("hor1ey@mail.ru", "ma.kalmykov23@gmail.com", str(e))
         # except:
         #     pass
+    connection.close()
 
 
 def debt_parse(message_id):
-    cursor.execute(f"SELECT * FROM data WHERE user_id={message_id}")
-    debt = json.loads(cursor.fetchone()[8])
+    connection = tcp.getconn()
+    tcp_cursor = connection.cursor()
+    connection.autocommit = True
+    tcp_cursor.execute(f"SELECT * FROM data WHERE user_id={message_id}")
+    debt = json.loads(tcp_cursor.fetchone()[8])
     if debt == []:
         return
     for elem in debt:
@@ -106,7 +117,8 @@ def debt_parse(message_id):
             elem['upd_date'] = datetime.now().date().strftime('%Y-%m-%d')
             elem['message'] = str(res.id)
     value = str("'") + json.dumps(debt) + str("'")
-    cursor.execute(f"UPDATE data SET debt = {value} WHERE user_id = {message_id}")
+    tcp_cursor.execute(f"UPDATE data SET debt = {value} WHERE user_id = {message_id}")
+    connection.close()
 
 
 def debt_alert(message_id, debt):
@@ -121,12 +133,12 @@ def debt_alert(message_id, debt):
     return res
 
 
-def make_debt(message_id, sub, mark, ls_comm, comm, type, datef, req):
+def make_debt(message_id, sub, mark, ls_comm, comm, type, datef, req, tcp_cursor):
     res = bot.send_message(message_id, "Кажется, у тебя появилась задолжность.. Это так?🙄", reply_markup=keyboard1)
     prev = json.loads(req[9])
     prev[res.id] = {'sub': sub, 'mark': mark, 'ls_comm': ls_comm, 'comm': comm, 'type': type, 'date': datef, 'message': '', 'upd_date' : datetime.now().date().strftime('%Y-%m-%d')}
     values = [message_id, str("'") + json.dumps(prev) + str("'")]
-    cursor.execute(f"UPDATE data SET buffer = {values[1]} WHERE user_id = {values[0]}")
+    tcp_cursor.execute(f"UPDATE data SET buffer = {values[1]} WHERE user_id = {values[0]}")
 
 
 def check_date(message_id, req):
@@ -146,7 +158,7 @@ def decode(data):
     return str(decrypted_text)[2:-1]
 
 
-def change_token(message_id, req):
+def change_token(message_id, req, tcp_cursor):
     login = req[1]
     password = req[2]
     r = post('https://api.eljur.ru/api/auth', data={
@@ -158,23 +170,30 @@ def change_token(message_id, req):
     })
     token = loads(r.text)['response']['result']['token']
     value = str("'") + token + str("'")
-    cursor.execute(f"UPDATE data SET token = {value} WHERE user_id = {message_id}")
+    tcp_cursor.execute(f"UPDATE data SET token = {value} WHERE user_id = {message_id}")
     return token
 
 
-def add_to_bd(message_id, new_list):
+def add_to_bd(message_id, new_list, tcp_cursor):
     values = [message_id, str("'") + json.dumps(new_list) + str("'")]
-    cursor.execute(f"UPDATE data SET last_marks = {values[1]} WHERE user_id = {values[0]}")
+    tcp_cursor.execute(f"UPDATE data SET last_marks = {values[1]} WHERE user_id = {values[0]}")
 
 
+tcp = ThreadedConnectionPool(minconn=1, maxconn=400, user=db_user, password=db_pass, host=db_host,
+                             database=db_name)
 if __name__ == '__main__' :
     while True:
         try:
+            conn = tcp.getconn()
+            cursor = conn.cursor()
+            conn.autocommit = True
             cursor.execute("SELECT user_id FROM data")
             test = cursor.fetchall()
             with ProcessPoolExecutor() as executor:
                 for elem in test:
+                    print(elem[0])
                     executor.submit(parsing_process, elem[0])
                     executor.submit(debt_parse, elem[0])
+            conn.close()
         except Exception as e:
             print(e)
