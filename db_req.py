@@ -52,7 +52,6 @@ def parsing_process(message_id):
                 if txt[i] != new_txt[i]:
                     ln1 = len(txt[i]['marks'])
                     ln2 = len(new_txt[i]['marks'])
-                    print("NOT EQUAL")
                     for j in range(ln2):
                         if j > len(txt[i]['marks']) - 1 or new_txt[i]['marks'][j] != txt[i]['marks'][j]:
                             if new_txt[i]['marks'][j]['value'] not in ["Н", "н", "ОП", "оп", "Оп"]:
@@ -81,8 +80,7 @@ def parsing_process(message_id):
                                 datef = f'Дата: {" ".join([date[2], mon[date[1]], date[0]])}\n'
                                 try:
                                     bot.send_message(message_id, f"{subject}{mark}{avr}{ls_comm}{comm}{tp}{datef}", parse_mode="HTML")
-                                    print("SENT!")
-                                    if "2" in mark:
+                                    if "2" in mark or "НПА" in mark or "А/З" in mark or "нпа" in mark or "а/з" in mark:
                                         make_debt(message_id, sub[new_txt[i]['name']], new_txt[i]['marks'][j]['value'], debt_ls_comm, debt_comm, debt_type, datef, req, tcp_cursor)
                                 except:
                                     #banned by the user
@@ -191,7 +189,6 @@ if __name__ == '__main__' :
             test = cursor.fetchall()
             with ProcessPoolExecutor() as executor:
                 for elem in test:
-                    print(elem[0])
                     executor.submit(parsing_process, elem[0])
                     executor.submit(debt_parse, elem[0])
             conn.close()
