@@ -96,7 +96,7 @@ def parsing_process(message_id):
         #     mail.sendmail("hor1ey@mail.ru", "ma.kalmykov23@gmail.com", str(e))
         # except:
         #     pass
-    connection.close()
+    tcp.putconn(connection)
 
 
 def debt_parse(message_id):
@@ -116,7 +116,7 @@ def debt_parse(message_id):
             elem['message'] = str(res.id)
     value = str("'") + json.dumps(debt) + str("'")
     tcp_cursor.execute(f"UPDATE data SET debt = {value} WHERE user_id = {message_id}")
-    connection.close()
+    tcp.putconn(connection)
 
 
 def debt_alert(message_id, debt):
@@ -191,6 +191,6 @@ if __name__ == '__main__' :
                 for elem in test:
                     executor.submit(parsing_process, elem[0])
                     executor.submit(debt_parse, elem[0])
-            conn.close()
+            tcp.putconn(conn)
         except Exception as e:
             print(e)
