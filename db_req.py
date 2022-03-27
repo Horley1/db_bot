@@ -190,7 +190,6 @@ if __name__ == '__main__' :
             test = cursor.fetchall()
             with ProcessPoolExecutor(max_workers=10) as executor:
                 for elem in test:
-                    print(elem)
                     executor.submit(parsing_process, elem[0])
                     executor.submit(debt_parse, elem[0])
             tcp.putconn(conn)

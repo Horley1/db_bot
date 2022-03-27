@@ -11,6 +11,7 @@ from datetime import datetime
 from fernet import *
 import json
 from keyboards import *
+from flask import jsonify
 
 bot = telebot.TeleBot(TOKEN)
 server = Flask(__name__)
@@ -290,6 +291,11 @@ def getMessage():
     bot.process_new_updates([update])
     return "!", 200
 
+@server.route('/')
+def startPage():
+    resp = jsonify(success=True)
+    resp.status_code = 200
+    return resp
 
 if __name__ == "__main__":
     bot.remove_webhook()
