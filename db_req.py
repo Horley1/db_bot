@@ -31,7 +31,7 @@ def get_elgur_by_token(token, message_id, req, tcp_cursor):
         'vendor': '2007',
         'out_format': 'json',
         'devkey': '9235e26e80ac2c509c48fe62db23642c',
-        'days': '20220110-20220320'
+        'days': '20220110-20220530'
     })
     student_code = list(r2.json()['response']['result']['students'].keys())[0]
     lst_marks = r2.json()['response']['result']['students'][student_code]['lessons']
@@ -104,13 +104,14 @@ def debt_parse(message_id):
     tcp_cursor = connection.cursor()
     connection.autocommit = True
     tcp_cursor.execute(f"SELECT * FROM data WHERE user_id={message_id}")
-    debt = json.loads(tcp_cursor.fetchone()[8])
+    data = tcp_cursor.fetchone()
+    debt = json.loads(data[8])
     if debt == []:
         return
     for elem in debt:
         prev_date = datetime.strptime(elem['upd_date'], '%Y-%m-%d').date()
         dif = (datetime.now().date() - prev_date).days
-        if dif > 5:
+        if dif > data[10]:
             res = debt_alert(message_id, elem)
             elem['upd_date'] = datetime.now().date().strftime('%Y-%m-%d')
             elem['message'] = str(res.id)
@@ -177,7 +178,7 @@ def add_to_bd(message_id, new_list, tcp_cursor):
     tcp_cursor.execute(f"UPDATE data SET last_marks = {values[1]} WHERE user_id = {values[0]}")
 
 
-tcp = ThreadedConnectionPool(minconn=1, maxconn=400, user=db_user, password=db_pass, host=db_host,
+tcp = ThreadedConnectionPool(minconn=1, maxconn=1000, user=db_user, password=db_pass, host=db_host,
                              database=db_name)
 if __name__ == '__main__' :
     while True:
@@ -187,10 +188,13 @@ if __name__ == '__main__' :
             conn.autocommit = True
             cursor.execute("SELECT user_id FROM data")
             test = cursor.fetchall()
-            with ProcessPoolExecutor() as executor:
+            with ProcessPoolExecutor(max_workers=10) as executor:
                 for elem in test:
+                    print(elem)
                     executor.submit(parsing_process, elem[0])
                     executor.submit(debt_parse, elem[0])
             tcp.putconn(conn)
         except Exception as e:
             print(e)
+            tcp = ThreadedConnectionPool(minconn=1, maxconn=1000, user=db_user, password=db_pass, host=db_host,
+                                         database=db_name)
