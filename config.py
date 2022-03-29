@@ -1,6 +1,6 @@
 TOKEN = '5199364372:AAGnaM9JbpyH2_JjTpCi1zb3EN5nWUtiwmE'
 #TOKEN = '5256986108:AAGuCg2FPFxltj0mvNQw_nBnk2EXhLpT67k'
-URL = 'https://elgubot.herokuapp.com/' + TOKEN
+URL = 'https://elbotv2.herokuapp.com/' + TOKEN
 ids =  ["CAACAgIAAxkBAAED5jliB622rYVv8eZEJhSU02AfXY6HEwACCwEAAlKJkSNKMfbkP3tfNSME",
         "CAACAgIAAxkBAAED5jtiB627ZWPy4SQYjXy4mT_uxr7f5wACWwADwZxgDNjYPseA8L6OIwQ",
         "CAACAgIAAxkBAAED5j1iB62_gxfmocZbsXvbUzcQb7TPIwACOgEAAlKJkSM5H9SlIyE44CME",
@@ -77,3 +77,7 @@ sub = {"Алгебра":"алгебре", "Биология":"биологии",
        "История России. Всеобщая история":"истории России и всеобщей истории","Литература":"литературе", "Обществознание":"обществознанию","Практикум":"практикуму","Практикум по решению задач по физике" :"практикум по физике",
        "Русский язык":"русскому языку","Технология":"технологии","Физика":"физике","Физкультура":"физкультуре","Химия":"химии"}
 
+start_period = '20220328'
+end_period = '20220530'
+next_periods = []
+#TODO: fix periods in config

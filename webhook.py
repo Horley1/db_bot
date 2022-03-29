@@ -11,6 +11,7 @@ from datetime import datetime
 from fernet import *
 import json
 from keyboards import *
+from flask import jsonify
 
 bot = telebot.TeleBot(TOKEN)
 server = Flask(__name__)
@@ -83,7 +84,7 @@ def get_elgur(login, password, message):
         'vendor': '2007',
         'out_format': 'json',
         'devkey': '9235e26e80ac2c509c48fe62db23642c',
-        'days': '20220110-20220530'
+        'days': start_period + '-' + end_period
     })
     student_code = list(r2.json()['response']['result']['students'].keys())[0]
     lst_marks = r2.json()['response']['result']['students'][student_code]['lessons']
@@ -178,6 +179,9 @@ def process_callback_button4(callback_query):
     bot.answer_callback_query(callback_query.id)
     cursor.execute(f"SELECT * FROM data WHERE user_id={callback_query.from_user.id}")
     data = cursor.fetchone()
+    if data == None:
+        bot.send_message(callback_query.from_user.id, "Ты не зарегистрирован! Напиши: /start")
+        return
     debt_button = types.InlineKeyboardButton(str(data[10]), callback_data='debt')
     keyboard = types.InlineKeyboardMarkup(row_width=3).add(button13, debt_button, button14, button5)
     bot.edit_message_reply_markup(callback_query.from_user.id, callback_query.message.message_id, reply_markup=keyboard)
@@ -198,10 +202,13 @@ def process_callback_button_debt(callback_query):
 def process_callback_button6(callback_query):
     bot.answer_callback_query(callback_query.id)
     cursor.execute(f"SELECT * FROM data WHERE user_id={callback_query.from_user.id}")
-    data = json.loads(cursor.fetchone()[4])
+    data = cursor.fetchone()
+    if data == None:
+        bot.send_message(callback_query.from_user.id, "Ты не зарегистрирован! Напиши: /start")
+        return
     counter = 0
     average = 0
-    for elem in data:
+    for elem in json.loads(data[4]):
         average += float(elem['average'])
         counter += 1
     bot.send_message(callback_query.from_user.id, f"Твой всепредметный средний балл: {average / counter:.{2}f}💪🏻")
@@ -283,6 +290,21 @@ def process_callback_button14(callback_query):
     except Exception as e:
         print(e)
 
+
+@bot.callback_query_handler(func=lambda c: c.data == 'button16')
+def process_callback_button16(callback_query):
+    bot.answer_callback_query(callback_query.id, text="Ты собираешься удалить свой профиль!😳\nПодтверди это действие нажатием кнопки 'Подтверждаю'✅", show_alert=True)
+    bot.edit_message_reply_markup(callback_query.from_user.id, callback_query.message.message_id, reply_markup=keyboard6)
+
+
+@bot.callback_query_handler(func=lambda c: c.data == 'button17')
+def process_callback_button16(callback_query):
+    bot.answer_callback_query(callback_query.id)
+    cursor.execute(f"DELETE FROM data WHERE user_id={callback_query.from_user.id}")
+    bot.send_message(callback_query.from_user.id, 'Профиль благополучно удален!😢')
+    bot.edit_message_reply_markup(callback_query.from_user.id, callback_query.message.message_id, reply_markup=keyboard5)
+
+
 @server.route('/' + TOKEN, methods=['POST'])
 def getMessage():
     json_string = request.get_data().decode('utf-8')
@@ -290,6 +312,11 @@ def getMessage():
     bot.process_new_updates([update])
     return "!", 200
 
+@server.route('/')
+def startPage():
+    resp = jsonify(success=True)
+    resp.status_code = 200
+    return resp
 
 if __name__ == "__main__":
     bot.remove_webhook()

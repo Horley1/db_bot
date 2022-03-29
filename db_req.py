@@ -31,7 +31,7 @@ def get_elgur_by_token(token, message_id, req, tcp_cursor):
         'vendor': '2007',
         'out_format': 'json',
         'devkey': '9235e26e80ac2c509c48fe62db23642c',
-        'days': '20220110-20220530'
+        'days': start_period + '-' + end_period
     })
     student_code = list(r2.json()['response']['result']['students'].keys())[0]
     lst_marks = r2.json()['response']['result']['students'][student_code]['lessons']
@@ -190,10 +190,12 @@ if __name__ == '__main__' :
             test = cursor.fetchall()
             with ProcessPoolExecutor(max_workers=10) as executor:
                 for elem in test:
-                    print(elem)
                     executor.submit(parsing_process, elem[0])
                     executor.submit(debt_parse, elem[0])
             tcp.putconn(conn)
+            # if datetime.now() - datetime.strptime(end_period, '%Y-%m-%d').date() >= 0 and next_periods != []:
+            #TODO: fix periods
+
         except Exception as e:
             print(e)
             tcp = ThreadedConnectionPool(minconn=1, maxconn=1000, user=db_user, password=db_pass, host=db_host,
