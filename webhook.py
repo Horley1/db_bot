@@ -114,6 +114,7 @@ def reg_to_bd(message):
     res = bot.send_message(message.from_user.id, 'Ага, в базу тебя добавил... А теперь время получать оценки, салага!')
     bot.send_sticker(message.from_user.id, 'CAACAgIAAxkBAAEDz7hh_nZwsCfI-0F0RDJAccjHRFO2IgACYgADmS9LCloe14FkpNDVIwQ',
                      res.id)
+    bot.send_message(327830972, f'Новый пользователь!💪🏻\nИмя: {message.from_user.first_name} {message.from_user.last_name}\nАккаунт: @{message.from_user.username}, {message.from_user.id}')
 
 
 def get_debt(message):
@@ -218,7 +219,17 @@ def process_callback_button6(callback_query):
 @bot.callback_query_handler(func=lambda c: c.data == 'button7')
 def process_callback_button7(callback_query):
     bot.answer_callback_query(callback_query.id)
-    bot.send_message(callback_query.from_user.id, "🧑🏼‍💻Раздел в разработке!🧑🏼‍💻")
+    cursor.execute(f"SELECT * FROM data WHERE user_id={callback_query.from_user.id}")
+    data = cursor.fetchone()
+    if data == None:
+        bot.send_message(callback_query.from_user.id, "Ты не зарегистрирован! Напиши: /start")
+        return
+    if bool(data[12]):
+        keyboard = types.InlineKeyboardMarkup(row_width=1).add(button19, button20, button5)
+    else:
+        keyboard = types.InlineKeyboardMarkup(row_width=1).add(button18, button20, button5)
+    bot.edit_message_reply_markup(callback_query.from_user.id, callback_query.message.message_id, reply_markup=keyboard)
+
 
 
 @bot.callback_query_handler(func=lambda c: c.data == 'button8')
@@ -306,20 +317,83 @@ def process_callback_button16(callback_query):
     bot.edit_message_reply_markup(callback_query.from_user.id, callback_query.message.message_id, reply_markup=keyboard5)
 
 
-@server.route('/' + TOKEN, methods=['POST'])
-def getMessage():
-    json_string = request.get_data().decode('utf-8')
-    update = telebot.types.Update.de_json(json_string)
-    bot.process_new_updates([update])
-    return "!", 200
+def get_homework(user_id):
+    cursor.execute(f"SELECT * FROM data WHERE user_id={user_id}")
+    token = cursor.fetchone()[3]
+    r2 = get('https://api.eljur.ru/api/gethomework', params={
+        'auth_token': token,
+        'vendor': '2007',
+        'out_format': 'json',
+        'devkey': '9235e26e80ac2c509c48fe62db23642c',
+        'days': start_period + '-' + end_period
+    })
+    data = r2.json()['response']['result']['students']
+    return json.dumps(data[list(data.keys())[0]]['days'])
 
-@server.route('/')
-def startPage():
-    resp = jsonify(success=True)
-    resp.status_code = 200
-    return resp
 
-if __name__ == "__main__":
-    bot.remove_webhook()
-    bot.set_webhook(url=URL)
-    server.run(host="0.0.0.0", port=int(os.environ.get('PORT', 5000)))
+@bot.callback_query_handler(func=lambda c: c.data == 'button18')
+def process_callback_button18(callback_query):
+    bot.answer_callback_query(callback_query.id)
+    keyboard = types.InlineKeyboardMarkup(row_width=1).add(button19, button20, button5)
+    bot.edit_message_reply_markup(callback_query.from_user.id, callback_query.message.message_id, reply_markup=keyboard)
+    cursor.execute(f"UPDATE data SET homeworks = true WHERE user_id = {callback_query.from_user.id}")
+    cursor.execute(f"UPDATE data SET last_hw = '{get_homework(callback_query.from_user.id)}' WHERE user_id = {callback_query.from_user.id}")
+
+
+@bot.callback_query_handler(func=lambda c: c.data == 'button19')
+def process_callback_button19(callback_query):
+    bot.answer_callback_query(callback_query.id)
+    keyboard = types.InlineKeyboardMarkup(row_width=1).add(button18, button20, button5)
+    bot.edit_message_reply_markup(callback_query.from_user.id, callback_query.message.message_id, reply_markup=keyboard)
+    cursor.execute(f"UPDATE data SET homeworks = false WHERE user_id = {callback_query.from_user.id}")
+
+@bot.callback_query_handler(func=lambda c: c.data == 'button21')
+def process_callback_button7(callback_query):
+    bot.answer_callback_query(callback_query.id)
+    cursor.execute(f"SELECT * FROM data WHERE user_id={callback_query.from_user.id}")
+    data = cursor.fetchone()
+    if data == None:
+        bot.send_message(callback_query.from_user.id, "Ты не зарегистрирован! Напиши: /start")
+        return
+    if bool(data[11]):
+        keyboard = types.InlineKeyboardMarkup(row_width=1).add(button23, button5)
+    else:
+        keyboard = types.InlineKeyboardMarkup(row_width=1).add(button22, button5)
+    bot.edit_message_reply_markup(callback_query.from_user.id, callback_query.message.message_id, reply_markup=keyboard)
+
+
+@bot.callback_query_handler(func=lambda c: c.data == 'button22')
+def process_callback_button22(callback_query):
+    bot.answer_callback_query(callback_query.id)
+    keyboard = types.InlineKeyboardMarkup(row_width=1).add(button23, button5)
+    bot.edit_message_reply_markup(callback_query.from_user.id, callback_query.message.message_id, reply_markup=keyboard)
+    cursor.execute(f"UPDATE data SET marks = true WHERE user_id = {callback_query.from_user.id}")
+
+
+@bot.callback_query_handler(func=lambda c: c.data == 'button23')
+def process_callback_button23(callback_query):
+    bot.answer_callback_query(callback_query.id)
+    keyboard = types.InlineKeyboardMarkup(row_width=1).add(button22, button5)
+    bot.edit_message_reply_markup(callback_query.from_user.id, callback_query.message.message_id, reply_markup=keyboard)
+    cursor.execute(f"UPDATE data SET marks = false WHERE user_id = {callback_query.from_user.id}")
+
+# @server.route('/' + TOKEN, methods=['POST'])
+# def getMessage():
+#     json_string = request.get_data().decode('utf-8')
+#     update = telebot.types.Update.de_json(json_string)
+#     bot.process_new_updates([update])
+#     return "!", 200
+#
+# @server.route('/')
+# def startPage():
+#     resp = jsonify(success=True)
+#     resp.status_code = 200
+#     return resp
+#
+# if __name__ == "__main__":
+#     bot.remove_webhook()
+#     bot.set_webhook(url=URL)
+#     server.run(host="0.0.0.0", port=int(os.environ.get('PORT', 5000)))
+
+bot.remove_webhook()
+bot.polling()

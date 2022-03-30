@@ -15,7 +15,8 @@ button6 = types.InlineKeyboardButton('😈Средний балл по оцен�
 button7 = types.InlineKeyboardButton('📚Домашние задания📚', callback_data='button7')
 button8 = types.InlineKeyboardButton('🙌🏻Вопросы и предложения🙌🏻', callback_data='button8')
 button16 = types.InlineKeyboardButton('❌Удалить профиль из базы❌', callback_data='button16')
-keyboard5 = types.InlineKeyboardMarkup(row_width=1).add(button4, button6, button7, button8, button16)
+button21 = types.InlineKeyboardButton('Новые оценки5️⃣', callback_data='button21')
+keyboard5 = types.InlineKeyboardMarkup(row_width=1).add(button4, button6, button7, button8, button21, button16)
 
 button9 = types.InlineKeyboardButton('📝Регистрация📝', callback_data='button9')
 button10 = types.InlineKeyboardButton('Что я умею❓', callback_data='button10')
@@ -30,3 +31,10 @@ button15 = types.InlineKeyboardButton('5', callback_data='button15')
 
 button17 = types.InlineKeyboardButton('Подтверждаю', callback_data='button17')
 keyboard6 = types.InlineKeyboardMarkup(row_width=1).add(button17, button5)
+
+button18 = types.InlineKeyboardButton('Включить отправку домашних заданий✅', callback_data='button18')
+button19 = types.InlineKeyboardButton('Выключить отправку домашних заданий❌', callback_data='button19')
+button20 = types.InlineKeyboardButton('Изменить срок обновления домашних задания⏱', callback_data='button20')
+
+button22 = types.InlineKeyboardButton('Включить отправку новых оценок✅', callback_data='button22')
+button23 = types.InlineKeyboardButton('Выключить отправку новых оценок❌', callback_data='button23')
