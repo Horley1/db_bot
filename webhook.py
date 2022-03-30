@@ -209,8 +209,9 @@ def process_callback_button6(callback_query):
     counter = 0
     average = 0
     for elem in json.loads(data[4]):
-        average += float(elem['average'])
-        counter += 1
+        if elem['average'] != '0':
+            average += float(elem['average'])
+            counter += 1
     bot.send_message(callback_query.from_user.id, f"Твой всепредметный средний балл: {average / counter:.{2}f}💪🏻")
 
 
