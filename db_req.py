@@ -48,6 +48,7 @@ def parsing_process(message_id):
         new_txt = get_elgur_by_token(req[3], message_id, req, tcp_cursor)
         txt = json.loads(req[4])
         if new_txt != txt:
+            add_to_bd(message_id, new_txt, tcp_cursor)
             for i in range(16):
                 if txt[i] != new_txt[i]:
                     ln1 = len(txt[i]['marks'])
@@ -85,7 +86,6 @@ def parsing_process(message_id):
                                 except:
                                     #banned by the user
                                     pass
-            add_to_bd(message_id, new_txt, tcp_cursor)
 
     except Exception as e:
         new_txt = get_elgur_by_token(txt[3], message_id)
