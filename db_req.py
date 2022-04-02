@@ -17,8 +17,6 @@ from psycopg2.pool import *
 
 
 bot = telebot.TeleBot(TOKEN)
-# mail = smtplib.SMTP_SSL('smtp.mail.ru', 465)
-# mail.login('hor1ey@mail.ru', 'twzr96KmMhnVPzm8vkmg')
 
 
 
@@ -39,16 +37,16 @@ def get_elgur_by_token(token, message_id, req, tcp_cursor):
 
 
 def parsing_process(message_id):
+    connection = tcp.getconn()
+    tcp_cursor = connection.cursor()
+    connection.autocommit = True
+    tcp_cursor.execute(f"SELECT * FROM data WHERE user_id={message_id}")
+    req = tcp_cursor.fetchone()
+    txt = json.loads(req[4])
     try:
-        connection = tcp.getconn()
-        tcp_cursor = connection.cursor()
-        connection.autocommit = True
-        tcp_cursor.execute(f"SELECT * FROM data WHERE user_id={message_id}")
-        req = tcp_cursor.fetchone()
         new_txt = get_elgur_by_token(req[3], message_id, req, tcp_cursor)
-        txt = json.loads(req[4])
         if new_txt != txt:
-            add_to_bd(message_id, new_txt, tcp_cursor)
+            tcp_cursor.execute(f"UPDATE data SET last_marks = '{json.dumps(new_txt)}' WHERE user_id = {message_id}")
             for i in range(16):
                 if txt[i] != new_txt[i]:
                     ln1 = len(txt[i]['marks'])
@@ -89,13 +87,10 @@ def parsing_process(message_id):
 
     except Exception as e:
         new_txt = get_elgur_by_token(txt[3], message_id)
-        add_to_bd(message_id, new_txt, tcp_cursor)
+        tcp_cursor.execute(f"UPDATE data SET last_marks = '{json.dumps(new_txt)}' WHERE user_id = {message_id}")
         print("Error")
         print(e)
-        # try:
-        #     mail.sendmail("hor1ey@mail.ru", "ma.kalmykov23@gmail.com", str(e))
-        # except:
-        #     pass
+
     tcp.putconn(connection)
 
 
@@ -172,10 +167,6 @@ def change_token(message_id, req, tcp_cursor):
     tcp_cursor.execute(f"UPDATE data SET token = {value} WHERE user_id = {message_id}")
     return token
 
-
-def add_to_bd(message_id, new_list, tcp_cursor):
-    values = [message_id, str("'") + json.dumps(new_list) + str("'")]
-    tcp_cursor.execute(f"UPDATE data SET last_marks = {values[1]} WHERE user_id = {values[0]}")
 
 
 tcp = ThreadedConnectionPool(minconn=1, maxconn=1000, user=db_user, password=db_pass, host=db_host,
