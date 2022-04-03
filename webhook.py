@@ -213,7 +213,7 @@ def process_callback_button6(callback_query):
         if elem['average'] != '0':
             average += float(elem['average'])
             counter += 1
-    bot.send_message(callback_query.from_user.id, f"Твой всепредметный средний балл: {average / counter:.{2}f}💪🏻")
+    bot.send_message(callback_query.from_user.id, f"Твой всепредметный средний балл за эту четверть: {average / counter:.{2}f}💪🏻")
 
 
 @bot.callback_query_handler(func=lambda c: c.data == 'button7')
@@ -376,6 +376,67 @@ def process_callback_button23(callback_query):
     keyboard = types.InlineKeyboardMarkup(row_width=1).add(button22, button5)
     bot.edit_message_reply_markup(callback_query.from_user.id, callback_query.message.message_id, reply_markup=keyboard)
     cursor.execute(f"UPDATE data SET marks = false WHERE user_id = {callback_query.from_user.id}")
+
+
+@bot.callback_query_handler(func=lambda c: c.data == 'button24')
+def process_callback_button24(callback_query):
+    bot.answer_callback_query(callback_query.id)
+    cursor.execute(f"SELECT token FROM data WHERE user_id={callback_query.from_user.id}")
+    data = cursor.fetchone()
+    r2 = get('https://api.eljur.ru/api/getschedule', params={
+        'auth_token': data,
+        'vendor': '2007',
+        'out_format': 'json',
+        'devkey': '9235e26e80ac2c509c48fe62db23642c',
+        'days': start_period + '-' + end_period
+    })
+    line = ''
+    if datetime.now().strftime('%Y%m%d') not in r2.json()['response']['result']['days']:
+        bot.send_message(callback_query.from_user.id, "Ошибка!❌ Сегодня выходной!")
+        bot.send_sticker(callback_query.from_user.id, "CAACAgIAAxkBAAEEXEtiSXcuWO5UIB39jx2wrYZDXralagACxAcAApb6EgW5zuHJF5MrlCME")
+        return
+    bot.send_message(callback_query.from_user.id, "Сегодняшнее расписание:")
+    data = r2.json()['response']['result']['days'][datetime.now().strftime('%Y%m%d')]['items']
+    for elem in enumerate(data):
+        line += str(elem[0] + 1) + '. ' + elem[1]['name'] + ' (' + str(elem[0] + 9) + ':' + '00-' + str(elem[0] + 9) + ':' + '45' + ')' + '\n'
+    bot.send_message(callback_query.from_user.id, line)
+
+@bot.callback_query_handler(func=lambda c: c.data == 'button25')
+def process_callback_button25(callback_query):
+    bot.answer_callback_query(callback_query.id)
+    cursor.execute(f"SELECT * FROM data WHERE user_id={callback_query.from_user.id}")
+    data = cursor.fetchone()
+    if data == None:
+        bot.send_message(callback_query.from_user.id, "Ты не зарегистрирован! Напиши: /start")
+        return
+    if bool(data[12]):
+        keyboard = types.InlineKeyboardMarkup(row_width=1).add(button27, button5)
+    else:
+        keyboard = types.InlineKeyboardMarkup(row_width=1).add(button26, button5)
+    bot.edit_message_reply_markup(callback_query.from_user.id, callback_query.message.message_id, reply_markup=keyboard)
+
+
+@bot.callback_query_handler(func=lambda c: c.data == 'button26')
+def process_callback_button26(callback_query):
+    bot.answer_callback_query(callback_query.id)
+    keyboard = types.InlineKeyboardMarkup(row_width=1).add(button27, button5)
+    bot.edit_message_reply_markup(callback_query.from_user.id, callback_query.message.message_id, reply_markup=keyboard)
+    cursor.execute(f"UPDATE data SET schedule = true WHERE user_id = {callback_query.from_user.id}")
+
+
+@bot.callback_query_handler(func=lambda c: c.data == 'button27')
+def process_callback_button27(callback_query):
+    bot.answer_callback_query(callback_query.id)
+    keyboard = types.InlineKeyboardMarkup(row_width=1).add(button26, button5)
+    bot.edit_message_reply_markup(callback_query.from_user.id, callback_query.message.message_id, reply_markup=keyboard)
+    cursor.execute(f"UPDATE data SET schedule = false WHERE user_id = {callback_query.from_user.id}")
+
+@bot.callback_query_handler(func=lambda c: c.data == 'button28')
+def process_callback_button28(callback_query):
+    bot.answer_callback_query(callback_query.id)
+    cursor.execute("SELECT user_id FROM data")
+    bot.send_message(callback_query.from_user.id, f"Статистика:\nКоличество пользователей: {len(cursor.fetchall())}")
+
 
 @server.route('/' + TOKEN, methods=['POST'])
 def getMessage():
