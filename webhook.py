@@ -14,6 +14,7 @@ from keyboards import *
 from flask import jsonify
 from telebot import types
 from math import ceil
+from pytz import timezone
 
 
 bot = telebot.TeleBot(TOKEN)
@@ -110,8 +111,8 @@ def reg_to_bd(message):
         return
     token, lst_marks = get_elgur(login, password, message)
     values = [message.chat.id, str("'") + encode(login) + str("'"), str("'") + encode(password) + str("'"),
-              str("'") + token + str("'"), str("'") + dumps(lst_marks) + str("'"), datetime.now().date().day,
-              datetime.now().date().month, datetime.now().date().year]
+              str("'") + token + str("'"), str("'") + dumps(lst_marks) + str("'"), datetime.now(timezone('Europe/Moscow')).date().day,
+              datetime.now(timezone('Europe/Moscow')).date().month, datetime.now(timezone('Europe/Moscow')).date().year]
     cursor.execute(
         f"INSERT INTO data(user_id, login, pass, token, last_marks, day, month, year) VALUES({values[0]}, {values[1]}, {values[2]}, {values[3]}, {values[4]}, {values[5]}, {values[6]}, {values[7]});")
     res = bot.send_message(message.from_user.id, 'Ага, в базу тебя добавил... А теперь время получать оценки, салага!')
@@ -395,14 +396,13 @@ def process_callback_button24(callback_query):
         'days': start_period + '-' + end_period
     })
     line = ''
-    print(datetime.now().time())
-    if datetime.now().strftime('%Y%m%d') not in r2.json()['response']['result']['days']:
+    if datetime.now(timezone('Europe/Moscow')).strftime('%Y%m%d') not in r2.json()['response']['result']['days']:
         bot.send_message(callback_query.from_user.id, "Ошибка!❌ Сегодня выходной!")
         bot.send_sticker(callback_query.from_user.id, "CAACAgIAAxkBAAEEXEtiSXcuWO5UIB39jx2wrYZDXralagACxAcAApb6EgW5zuHJF5MrlCME")
         return
     bot.send_message(callback_query.from_user.id, "Сегодняшнее расписание:")
-    data = r2.json()['response']['result']['days'][datetime.now().strftime('%Y%m%d')]['items']
-    num = ceil((datetime.now().time().hour * 60 + datetime.now().time().minute - 539) / 60)
+    data = r2.json()['response']['result']['days'][datetime.now(timezone('Europe/Moscow')).strftime('%Y%m%d')]['items']
+    num = ceil((datetime.now(timezone('Europe/Moscow')).time().hour * 60 + datetime.now(timezone('Europe/Moscow')).time().minute - 539) / 60)
     for elem in enumerate(data):
         if elem[0] + 1 == num:
             line += f"{elem[0] + 1}. {elem[1]['name']} <b><u>({elem[0] + 9}:00-{elem[0] + 9}:45)</u></b><i><b> ⏰ТЕКУЩИЙ⏰</b></i>\n"
