@@ -395,6 +395,7 @@ def process_callback_button24(callback_query):
         'days': start_period + '-' + end_period
     })
     line = ''
+    print(datetime.now().time())
     if datetime.now().strftime('%Y%m%d') not in r2.json()['response']['result']['days']:
         bot.send_message(callback_query.from_user.id, "Ошибка!❌ Сегодня выходной!")
         bot.send_sticker(callback_query.from_user.id, "CAACAgIAAxkBAAEEXEtiSXcuWO5UIB39jx2wrYZDXralagACxAcAApb6EgW5zuHJF5MrlCME")
