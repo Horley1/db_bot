@@ -12,6 +12,9 @@ from fernet import *
 import json
 from keyboards import *
 from flask import jsonify
+from telebot import types
+from math import ceil
+
 
 bot = telebot.TeleBot(TOKEN)
 server = Flask(__name__)
@@ -315,6 +318,7 @@ def process_callback_button16(callback_query):
     cursor.execute(f"DELETE FROM data WHERE user_id={callback_query.from_user.id}")
     bot.send_message(callback_query.from_user.id, 'Профиль благополучно удален!😢')
     bot.edit_message_reply_markup(callback_query.from_user.id, callback_query.message.message_id, reply_markup=keyboard5)
+    bot.send_message(327830972,f'Пользователь удалился🤧\nИмя: {callback_query.from_user.first_name} {callback_query.from_user.last_name}\nАккаунт: @{callback_query.from_user.username}, {callback_query.from_user.id}')
 
 
 def get_homework(user_id):
@@ -397,9 +401,13 @@ def process_callback_button24(callback_query):
         return
     bot.send_message(callback_query.from_user.id, "Сегодняшнее расписание:")
     data = r2.json()['response']['result']['days'][datetime.now().strftime('%Y%m%d')]['items']
+    num = ceil((datetime.now().time().hour * 60 + datetime.now().time().minute - 539) / 60)
     for elem in enumerate(data):
-        line += str(elem[0] + 1) + '. ' + elem[1]['name'] + ' (' + str(elem[0] + 9) + ':' + '00-' + str(elem[0] + 9) + ':' + '45' + ')' + '\n'
-    bot.send_message(callback_query.from_user.id, line)
+        if elem[0] + 1 == num:
+            line += f"{elem[0] + 1}. {elem[1]['name']} <b><u>({elem[0] + 9}:00-{elem[0] + 9}:45)</u></b><i><b> ⏰ТЕКУЩИЙ⏰</b></i>\n"
+        else:
+            line += f"{elem[0] + 1}. {elem[1]['name']} <b><u>({elem[0] + 9}:00-{elem[0] + 9}:45)</u></b>\n"
+    bot.send_message(callback_query.from_user.id, line, parse_mode="HTML")
 
 @bot.callback_query_handler(func=lambda c: c.data == 'button25')
 def process_callback_button25(callback_query):
@@ -438,20 +446,23 @@ def process_callback_button28(callback_query):
     bot.send_message(callback_query.from_user.id, f"Статистика:\nКоличество пользователей: {len(cursor.fetchall())}")
 
 
-@server.route('/' + TOKEN, methods=['POST'])
-def getMessage():
-    json_string = request.get_data().decode('utf-8')
-    update = telebot.types.Update.de_json(json_string)
-    bot.process_new_updates([update])
-    return "!", 200
+# @server.route('/' + TOKEN, methods=['POST'])
+# def getMessage():
+#     json_string = request.get_data().decode('utf-8')
+#     update = telebot.types.Update.de_json(json_string)
+#     bot.process_new_updates([update])
+#     return "!", 200
+#
+# @server.route('/')
+# def startPage():
+#     resp = jsonify(success=True)
+#     resp.status_code = 200
+#     return resp
+#
+# if __name__ == "__main__":
+#     bot.remove_webhook()
+#     bot.set_webhook(url=URL)
+#     server.run(host="0.0.0.0", port=int(os.environ.get('PORT', 5000)))
 
-@server.route('/')
-def startPage():
-    resp = jsonify(success=True)
-    resp.status_code = 200
-    return resp
-
-if __name__ == "__main__":
-    bot.remove_webhook()
-    bot.set_webhook(url=URL)
-    server.run(host="0.0.0.0", port=int(os.environ.get('PORT', 5000)))
+bot.remove_webhook()
+bot.polling()

@@ -48,9 +48,9 @@ def parsing_process(message_id):
         if new_txt != txt:
             tcp_cursor.execute(f"UPDATE data SET last_marks = '{json.dumps(new_txt)}' WHERE user_id = {message_id}")
             for i in range(16):
-                if txt[i] != new_txt[i]:
-                    ln1 = len(txt[i]['marks'])
-                    ln2 = len(new_txt[i]['marks'])
+                ln1 = len(txt[i]['marks'])
+                ln2 = len(new_txt[i]['marks'])
+                if ln2 > ln1 and txt[i] != new_txt[i]:
                     for j in range(ln2):
                         if j > len(txt[i]['marks']) - 1 or new_txt[i]['marks'][j] != txt[i]['marks'][j]:
                             if new_txt[i]['marks'][j]['value'] not in ["Н", "н", "ОП", "оп", "Оп"]:
