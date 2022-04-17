@@ -1,7 +1,7 @@
 #first = main, second - additional
 TOKEN = '5199364372:AAGnaM9JbpyH2_JjTpCi1zb3EN5nWUtiwmE'
 #TOKEN = '5256986108:AAGuCg2FPFxltj0mvNQw_nBnk2EXhLpT67k'
-URL = 'https://elbotv2.herokuapp.com/' + TOKEN
+URL = 'https://elgubot.herokuapp.com/' + TOKEN
 ids =  ['CAACAgIAAxkBAAEEW-piSXIVswfZpTUQbIQ2M4n9dLgIFgACwhQAAqV0-Ev2QS0_VNmeqyME',
         'CAACAgIAAxkBAAEEW-xiSXIbqRpOQI0vDbzQQn0PBDx7pwACWxQAAhEmSEiF-lHNpwsiUCME',
         'CAACAgIAAxkBAAEEW-5iSXIc47BonwABeJ9sLx3k4gLq1D0AAj0SAALdQchLDn4t5IqeVFojBA',
