@@ -1,7 +1,6 @@
 pyTelegramBotAPI
 Flask
 fernet
-telebot
 aiogram
 flask
 psycopg2
