@@ -1,5 +1,5 @@
-TOKEN = '5199364372:AAGnaM9JbpyH2_JjTpCi1zb3EN5nWUtiwmE'
-URL = 'https://elgubot.herokuapp.com/' + TOKEN
+TOKEN = 'ENTER YOUR TOKEN HERE'
+URL = 'ENTER YOUR URL WEBHOOK HERE' + TOKEN
 ids =  ["CAACAgIAAxkBAAED5jliB622rYVv8eZEJhSU02AfXY6HEwACCwEAAlKJkSNKMfbkP3tfNSME",
         "CAACAgIAAxkBAAED5jtiB627ZWPy4SQYjXy4mT_uxr7f5wACWwADwZxgDNjYPseA8L6OIwQ",
         "CAACAgIAAxkBAAED5j1iB62_gxfmocZbsXvbUzcQb7TPIwACOgEAAlKJkSM5H9SlIyE44CME",
@@ -66,10 +66,10 @@ phrases = ["Я не знаю такой команды(((. Для регистр
     "УХАДИ!!!!",
     "удали интеренет"]
 
-db_name = 'dft0ot5oh53gat'
-db_user = 'fpgvrquayzkmpl'
-db_pass = 'be29ae63278b02f6de70c261d907afae93390f4630602a9db37a9506466314df'
-db_host = 'ec2-54-228-97-176.eu-west-1.compute.amazonaws.com'
+db_name = 'YOUR DATABASE NAME'
+db_user = 'YOUR DATABASE USER'
+db_pass = 'YOUR DATABASE PASSWORD'
+db_host = 'YOUR DATABASE HOST'
 
 mon = {"01":"января", "02":"февраля", "03":"марта", "04":"апреля", "05":"мая", "06":"июня", "07":"июля", "08":"августа", "09":"сентября", "10":"октября", "11":"ноября", "12":"декабря"}
 sub = {"Алгебра":"алгебре", "Биология":"биологии", "География":"географии", "Геометрия":"геометрии","Иностранный язык (английский)":"английскому языку","Информатика":"информатике",
